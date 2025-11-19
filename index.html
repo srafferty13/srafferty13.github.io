@@ -148,7 +148,7 @@
         
         /* Hero Section */
         .hero {
-    background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('img/background.png');
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('img/background.png');
             background-size: cover;
             background-position: center;
             color: white;
@@ -228,6 +228,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 30px;
+            justify-items: center;
         }
         
         .skill-card {
@@ -237,6 +238,8 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: transform 0.3s;
             border-left: 4px solid var(--primary);
+            width: 100%;
+            max-width: 350px;
         }
         
         .skill-card:hover {
@@ -296,8 +299,11 @@
         /* Interests Section */
         .interests-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
+            justify-items: center;
+            max-width: 900px;
+            margin: 0 auto;
         }
         
         .interest-card {
@@ -306,6 +312,8 @@
             border-radius: 10px;
             text-align: center;
             transition: all 0.3s;
+            width: 100%;
+            max-width: 220px;
         }
         
         .interest-card:hover {
@@ -315,7 +323,6 @@
         
         .interest-card i {
             font-size: 2rem;
-            color: var(--primary);
             margin-bottom: 15px;
         }
         
@@ -324,6 +331,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
+            justify-items: center;
         }
         
         .cert-card {
@@ -331,6 +339,15 @@
             padding: 25px;
             border-radius: 10px;
             border-left: 4px solid var(--accent);
+            width: 100%;
+            max-width: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .cert-card h3 {
+            color: var(--accent);
         }
         
         /* Projects Section */
@@ -338,6 +355,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 30px;
+            justify-items: center;
         }
         
         .project-card {
@@ -346,6 +364,8 @@
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: all 0.3s;
+            width: 100%;
+            max-width: 350px;
         }
         
         .project-card:hover {
@@ -355,7 +375,6 @@
         
         .project-img {
             height: 200px;
-            background: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -404,12 +423,31 @@
             border-color: var(--primary);
         }
         
+        /* Contact Layout */
+        .contact-content {
+            display: flex;
+            gap: 40px;
+            margin-top: 40px;
+            align-items: flex-start;
+        }
+        
+        .contact-info {
+            flex: 1;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .map-container {
+            flex: 1;
+        }
+        
         /* Map Section */
         #map {
             height: 400px;
             width: 100%;
             border-radius: 10px;
-            margin-top: 30px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
         
@@ -434,6 +472,50 @@
         
         .social-links a:hover {
             color: var(--accent);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+        }
+        
+        .modal-content {
+            position: relative;
+            background-color: var(--card-bg);
+            margin: 5% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 900px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            color: var(--text);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: var(--accent);
+        }
+        
+        #pdf-viewer {
+            width: 100%;
+            height: 80vh;
+            border: none;
+            border-radius: 5px;
         }
         
         /* Responsive */
@@ -468,6 +550,10 @@
             .hero-btns .btn {
                 width: 80%;
                 margin-bottom: 10px;
+            }
+            
+            .contact-content {
+                flex-direction: column;
             }
         }
     </style>
@@ -517,13 +603,13 @@
                     
                     <div class="icon-links">
                         <a href="CV Scott Rafferty.pdf" class="icon-link" title="Télécharger mon CV">
-                            <i class="fas fa-file-pdf"></i>
+                            <i class="fas fa-file-pdf" style="color: #e74c3c;"></i>
                         </a>
                         <a href="https://github.com/srafferty13/docs" class="icon-link" title="Mon GitHub">
-                            <i class="fab fa-github"></i>
+                            <i class="fab fa-github" style="color: #3498db;"></i>
                         </a>
                         <a href="https://www.root-me.org/scott-rafferty" class="icon-link" title="Mon profil Root-me">
-                            <i class="fas fa-user-secret"></i>
+                            <i class="fas fa-user-secret" style="color: #f39c12;"></i>
                         </a>
                     </div>
                 </div>
@@ -543,22 +629,22 @@
             <h2>Mes centres d'intérêt</h2>
             <div class="interests-grid">
                 <div class="interest-card">
-                    <i class="fas fa-laptop-code"></i>
+                    <i class="fas fa-laptop-code" style="color: #3498db;"></i>
                     <h3>Informatique</h3>
                     <p>Passionné par les nouvelles technologies et la cybersécurité</p>
                 </div>
                 <div class="interest-card">
-                    <i class="fas fa-music"></i>
+                    <i class="fas fa-music" style="color: #9b59b6;"></i>
                     <h3>Musique</h3>
                     <p>Écoute et pratique de différents styles musicaux</p>
                 </div>
                 <div class="interest-card">
-                    <i class="fas fa-book"></i>
+                    <i class="fas fa-book" style="color: #e74c3c;"></i>
                     <h3>Littérature</h3>
                     <p>Lecture de romans et d'ouvrages techniques</p>
                 </div>
                 <div class="interest-card">
-                    <i class="fas fa-film"></i>
+                    <i class="fas fa-film" style="color: #f39c12;"></i>
                     <h3>Cinématographie</h3>
                     <p>Passion pour le cinéma et la réalisation</p>
                 </div>
@@ -661,14 +747,17 @@
                 <div class="cert-card">
                     <h3>Root-me</h3>
                     <p>Plateforme d'entraînement à la sécurité informatique</p>
+                    <a href="#" class="btn view-cert-btn" data-pdf="pdf/cert-temp.pdf" style="margin-top: 15px; padding: 8px 15px;">Voir la certification</a>
                 </div>
                 <div class="cert-card">
                     <h3>RGPD</h3>
                     <p>Règlement Général sur la Protection des Données</p>
+                    <a href="#" class="btn view-cert-btn" data-pdf="pdf/cert-rgpd.pdf" style="margin-top: 15px; padding: 8px 15px;">Voir la certification</a>
                 </div>
                 <div class="cert-card">
                     <h3>CTF</h3>
                     <p>Capture The Flag - Compétitions de sécurité informatique</p>
+                    <a href="#" class="btn view-cert-btn" data-pdf="pdf/cert-ctf.pdf" style="margin-top: 15px; padding: 8px 15px;">Voir la certification</a>
                 </div>
             </div>
         </div>
@@ -680,33 +769,33 @@
             <h2>Mes projets</h2>
             <div class="projects-grid">
                 <div class="project-card">
-                    <div class="project-img">
+                    <div class="project-img" style="background: linear-gradient(135deg, #3498db, #2ecc71);">
                         <i class="fas fa-shield-alt"></i>
                     </div>
                     <div class="project-content">
                         <h3>Site de sensibilisation au phishing</h3>
                         <p>Création d'un faux site de démonstration pour sensibiliser aux risques de cybersécurité</p>
-                        <a href="#" class="btn" style="margin-top: 15px; padding: 8px 15px;">Voir le projet</a>
+                        <a href="#" class="btn view-project-btn" data-pdf="projet-phishing.pdf" style="margin-top: 15px; padding: 8px 15px;">Voir le projet</a>
                     </div>
                 </div>
                 <div class="project-card">
-                    <div class="project-img">
+                    <div class="project-img" style="background: linear-gradient(135deg, #9b59b6, #e74c3c);">
                         <i class="fas fa-network-wired"></i>
                     </div>
                     <div class="project-content">
                         <h3>Infrastructure réseau virtuelle</h3>
                         <p>Configuration d'un réseau complet avec virtualisation sous Proxmox</p>
-                        <a href="#" class="btn" style="margin-top: 15px; padding: 8px 15px;">Voir le projet</a>
+                        <a href="#" class="btn view-project-btn" data-pdf="projet-reseau.pdf" style="margin-top: 15px; padding: 8px 15px;">Voir le projet</a>
                     </div>
                 </div>
                 <div class="project-card">
-                    <div class="project-img">
+                    <div class="project-img" style="background: linear-gradient(135deg, #f39c12, #e74c3c);">
                         <i class="fas fa-server"></i>
                     </div>
                     <div class="project-content">
                         <h3>Serveur web sécurisé</h3>
                         <p>Mise en place et sécurisation d'un serveur web avec services associés</p>
-                        <a href="#" class="btn" style="margin-top: 15px; padding: 8px 15px;">Voir le projet</a>
+                        <a href="#" class="btn view-project-btn" data-pdf="projet-serveur.pdf" style="margin-top: 15px; padding: 8px 15px;">Voir le projet</a>
                     </div>
                 </div>
             </div>
@@ -738,14 +827,20 @@
                     <button type="submit" class="btn">Envoyer</button>
                 </form>
             </div>
-            <div style="margin-top: 40px; text-align: center;">
-                <p><strong>Téléphone:</strong> 06 95 65 64 28</p>
-                <p><strong>Email:</strong> srafferty.ledantec@gmail.com</p>
-                <p><strong>Adresse:</strong> 5 rue Courbe, 22300 Lannion</p>
-            </div>
             
-            <!-- Map Section -->
-            <div id="map"></div>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3 style="color: var(--accent); margin-bottom: 20px;">Informations de contact</h3>
+                    <p><i class="fas fa-phone" style="color: #3498db; margin-right: 10px;"></i><strong>Téléphone:</strong> 06 95 65 64 28</p>
+                    <p><i class="fas fa-envelope" style="color: #f39c12; margin-right: 10px;"></i><strong>Email:</strong> srafferty.ledantec@gmail.com</p>
+                    <p><i class="fas fa-map-marker-alt" style="color: #e74c3c; margin-right: 10px;"></i><strong>Adresse:</strong> 5 rue Courbe, 22300 Lannion</p>
+                </div>
+                
+                <!-- Map Section -->
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -753,13 +848,16 @@
     <footer>
         <div class="container">
             <p>&copy; 2025 Scott Rafferty. Tous droits réservés.</p>
-            <div class="social-links">
-                <a href="#"><i class="fab fa-linkedin"></i></a>
-                <a href="https://github.com/scottrafferty"><i class="fab fa-github"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-            </div>
         </div>
     </footer>
+
+    <!-- PDF Modal -->
+    <div id="pdf-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <iframe id="pdf-viewer" src=""></iframe>
+        </div>
+    </div>
 
     <!-- OpenStreetMap Integration -->
     <script>
@@ -807,6 +905,49 @@
                     behavior: 'smooth'
                 });
             });
+        });
+
+        // PDF Modal functionality
+        const modal = document.getElementById('pdf-modal');
+        const pdfViewer = document.getElementById('pdf-viewer');
+        const closeBtn = document.querySelector('.close');
+        
+        // Function to open modal with PDF
+        function openPDF(pdfPath) {
+            pdfViewer.src = pdfPath;
+            modal.style.display = 'block';
+        }
+        
+        // Event listeners for certification buttons
+        document.querySelectorAll('.view-cert-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const pdfPath = this.getAttribute('data-pdf');
+                openPDF(pdfPath);
+            });
+        });
+        
+        // Event listeners for project buttons
+        document.querySelectorAll('.view-project-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const pdfPath = this.getAttribute('data-pdf');
+                openPDF(pdfPath);
+            });
+        });
+        
+        // Close modal when clicking X
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+            pdfViewer.src = '';
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                pdfViewer.src = '';
+            }
         });
     </script>
 </body>
