@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scott Rafferty - Portfolio</title>
+    <title>Portfolio - Scott Rafferty</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -38,6 +38,14 @@
         
         section {
             padding: 80px 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
         
         h1, h2, h3 {
@@ -324,6 +332,7 @@
         .interest-card i {
             font-size: 2rem;
             margin-bottom: 15px;
+            color: #8a2be2; /* Purple-red color */
         }
         
         /* Certifications Section */
@@ -392,9 +401,27 @@
         }
         
         /* Contact Section */
+        .contact-form-container {
+            display: flex;
+            gap: 40px;
+            margin-top: 40px;
+            align-items: flex-start;
+        }
+        
+        .contact-info {
+            flex: 1;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
         .contact-form {
-            max-width: 600px;
-            margin: 0 auto;
+            flex: 1;
+        }
+        
+        .map-container {
+            flex: 1;
         }
         
         .form-group {
@@ -421,26 +448,6 @@
         .form-group textarea:focus {
             outline: none;
             border-color: var(--primary);
-        }
-        
-        /* Contact Layout */
-        .contact-content {
-            display: flex;
-            gap: 40px;
-            margin-top: 40px;
-            align-items: flex-start;
-        }
-        
-        .contact-info {
-            flex: 1;
-            padding: 20px;
-            background: var(--card-bg);
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .map-container {
-            flex: 1;
         }
         
         /* Map Section */
@@ -552,7 +559,7 @@
                 margin-bottom: 10px;
             }
             
-            .contact-content {
+            .contact-form-container {
                 flex-direction: column;
             }
         }
@@ -563,7 +570,7 @@
     <header>
         <div class="container">
             <nav>
-                <div class="logo">Scott Rafferty</div>
+                <div class="logo">Portfolio</div>
                 <ul class="nav-links">
                     <li><a href="#accueil">Accueil</a></li>
                     <li><a href="#apropos">À propos</a></li>
@@ -603,13 +610,13 @@
                     
                     <div class="icon-links">
                         <a href="CV Scott Rafferty.pdf" class="icon-link" title="Télécharger mon CV">
-                            <i class="fas fa-file-pdf" style="color: #e74c3c;"></i>
+                            <i class="fas fa-file-pdf" style="color: #8a2be2;"></i>
                         </a>
                         <a href="https://github.com/srafferty13/docs" class="icon-link" title="Mon GitHub">
-                            <i class="fab fa-github" style="color: #3498db;"></i>
+                            <i class="fab fa-github" style="color: #8a2be2;"></i>
                         </a>
                         <a href="https://www.root-me.org/scott-rafferty" class="icon-link" title="Mon profil Root-me">
-                            <i class="fas fa-user-secret" style="color: #f39c12;"></i>
+                            <i class="fas fa-user-secret" style="color: #8a2be2;"></i>
                         </a>
                     </div>
                 </div>
@@ -629,22 +636,22 @@
             <h2>Mes centres d'intérêt</h2>
             <div class="interests-grid">
                 <div class="interest-card">
-                    <i class="fas fa-laptop-code" style="color: #3498db;"></i>
+                    <i class="fas fa-laptop-code"></i>
                     <h3>Informatique</h3>
                     <p>Passionné par les nouvelles technologies et la cybersécurité</p>
                 </div>
                 <div class="interest-card">
-                    <i class="fas fa-music" style="color: #9b59b6;"></i>
+                    <i class="fas fa-music"></i>
                     <h3>Musique</h3>
                     <p>Écoute et pratique de différents styles musicaux</p>
                 </div>
                 <div class="interest-card">
-                    <i class="fas fa-book" style="color: #e74c3c;"></i>
+                    <i class="fas fa-book"></i>
                     <h3>Littérature</h3>
                     <p>Lecture de romans et d'ouvrages techniques</p>
                 </div>
                 <div class="interest-card">
-                    <i class="fas fa-film" style="color: #f39c12;"></i>
+                    <i class="fas fa-film"></i>
                     <h3>Cinématographie</h3>
                     <p>Passion pour le cinéma et la réalisation</p>
                 </div>
@@ -689,6 +696,11 @@
                     <h3>Matériels</h3>
                     <p>Client léger (Axel 320), Point d'accès wifi, Routeur, Switch, Pare-feu</p>
                 </div>
+                <div class="skill-card">
+                    <h3>Tableau de compétences</h3>
+                    <p>Vue d'ensemble de mes compétences techniques</p>
+                    <a href="#" class="btn view-cert-btn" data-pdf="pdf/tab_comp.pdf" style="margin-top: 15px; padding: 8px 15px;">Voir le tableau</a>
+                </div>
             </div>
         </div>
     </section>
@@ -700,8 +712,30 @@
             <div class="timeline">
                 <div class="timeline-item">
                     <div class="timeline-content">
+                        <div class="timeline-date">2020-2021</div>
+                        <h3>Stage - Idéa Optical Lannion</h3>
+                        <p>1 semaine (stage de 3ème)</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">2022-2024</div>
+                        <h3>Baccalauréat STI2D</h3>
+                        <p>Lycée Félix le Dantec, Lannion</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">2023-2025</div>
+                        <h3>Caissier - Leclerc Lannion</h3>
+                        <p>6 mois (vacances scolaires)</p>
+                        <p>Développement du relationnel et de la communication</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
                         <div class="timeline-date">2024-2025</div>
-                        <h3>BTS SIO option SISR</h3>
+                        <h3>BTS SIO option SISR 1ère année</h3>
                         <p>Lycée Félix le Dantec, Lannion</p>
                     </div>
                 </div>
@@ -715,24 +749,9 @@
                 </div>
                 <div class="timeline-item">
                     <div class="timeline-content">
-                        <div class="timeline-date">2023-2025</div>
-                        <h3>Caissier - Leclerc Lannion</h3>
-                        <p>6 mois (vacances scolaires)</p>
-                        <p>Développement du relationnel et de la communication</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <div class="timeline-date">2022-2024</div>
-                        <h3>Baccalauréat STI2D</h3>
+                        <div class="timeline-date">2025-2026</div>
+                        <h3>BTS SIO option SISR 2ème année</h3>
                         <p>Lycée Félix le Dantec, Lannion</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <div class="timeline-date">2020-2021</div>
-                        <h3>Stage - Idéa Optical Lannion</h3>
-                        <p>1 semaine (stage de 3ème)</p>
                     </div>
                 </div>
             </div>
@@ -769,7 +788,7 @@
             <h2>Mes projets</h2>
             <div class="projects-grid">
                 <div class="project-card">
-                    <div class="project-img" style="background: linear-gradient(135deg, #3498db, #2ecc71);">
+                    <div class="project-img" style="background: linear-gradient(135deg, #8a2be2, #6a1cb0);">
                         <i class="fas fa-shield-alt"></i>
                     </div>
                     <div class="project-content">
@@ -779,7 +798,7 @@
                     </div>
                 </div>
                 <div class="project-card">
-                    <div class="project-img" style="background: linear-gradient(135deg, #9b59b6, #e74c3c);">
+                    <div class="project-img" style="background: linear-gradient(135deg, #8a2be2, #6a1cb0);">
                         <i class="fas fa-network-wired"></i>
                     </div>
                     <div class="project-content">
@@ -789,7 +808,7 @@
                     </div>
                 </div>
                 <div class="project-card">
-                    <div class="project-img" style="background: linear-gradient(135deg, #f39c12, #e74c3c);">
+                    <div class="project-img" style="background: linear-gradient(135deg, #8a2be2, #6a1cb0);">
                         <i class="fas fa-server"></i>
                     </div>
                     <div class="project-content">
@@ -806,37 +825,36 @@
     <section id="contact" class="contact">
         <div class="container">
             <h2>Contactez-moi</h2>
-            <div class="contact-form">
-                <form>
-                    <div class="form-group">
-                        <label for="name">Nom</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="subject">Sujet</label>
-                        <input type="text" id="subject" name="subject" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="message">Message</label>
-                        <textarea id="message" name="message" rows="5" required></textarea>
-                    </div>
-                    <button type="submit" class="btn">Envoyer</button>
-                </form>
-            </div>
-            
-            <div class="contact-content">
+            <div class="contact-form-container">
                 <div class="contact-info">
                     <h3 style="color: var(--accent); margin-bottom: 20px;">Informations de contact</h3>
-                    <p><i class="fas fa-phone" style="color: #3498db; margin-right: 10px;"></i><strong>Téléphone:</strong> 06 95 65 64 28</p>
-                    <p><i class="fas fa-envelope" style="color: #f39c12; margin-right: 10px;"></i><strong>Email:</strong> srafferty.ledantec@gmail.com</p>
-                    <p><i class="fas fa-map-marker-alt" style="color: #e74c3c; margin-right: 10px;"></i><strong>Adresse:</strong> 5 rue Courbe, 22300 Lannion</p>
+                    <p><i class="fas fa-phone" style="color: #8a2be2; margin-right: 10px;"></i><strong>Téléphone:</strong> 06 95 65 64 28</p>
+                    <p><i class="fas fa-envelope" style="color: #8a2be2; margin-right: 10px;"></i><strong>Email:</strong> srafferty.ledantec@gmail.com</p>
+                    <p><i class="fas fa-map-marker-alt" style="color: #8a2be2; margin-right: 10px;"></i><strong>Adresse:</strong> 5 rue Courbe, 22300 Lannion</p>
                 </div>
                 
-                <!-- Map Section -->
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group">
+                            <label for="name">Nom</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Sujet</label>
+                            <input type="text" id="subject" name="subject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn">Envoyer</button>
+                    </form>
+                </div>
+                
                 <div class="map-container">
                     <div id="map"></div>
                 </div>
@@ -863,11 +881,11 @@
     <script>
         // Initialize the map
         function initMap() {
-            // Coordinates for Lannion city center
-            const lannion = [48.7323, -3.4590];
+            // Coordinates for Lycée Félix le Dantec in Lannion
+            const lycee = [48.7381, -3.4567];
             
             // Create the map
-            const map = L.map('map').setView(lannion, 14);
+            const map = L.map('map').setView(lycee, 15);
             
             // Add OpenStreetMap tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -875,8 +893,8 @@
             }).addTo(map);
             
             // Add a marker
-            L.marker(lannion).addTo(map)
-                .bindPopup('Lannion, Brittany, France<br>Mon lieu de résidence')
+            L.marker(lycee).addTo(map)
+                .bindPopup('Lycée Félix le Dantec<br>Lieu de formation')
                 .openPopup();
         }
         
@@ -948,6 +966,25 @@
                 modal.style.display = 'none';
                 pdfViewer.src = '';
             }
+        });
+        
+        // Scroll animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all sections
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
         });
     </script>
 </body>
