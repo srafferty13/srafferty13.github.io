@@ -1429,6 +1429,40 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
     <script>
+        // Fix image paths for GitHub Pages vs local file
+        (function() {
+            // Detect if running on GitHub Pages (web server) or local file
+            const isLocalFile = window.location.protocol === 'file:';
+            const isGitHubPages = window.location.hostname.includes('github.io') || 
+                                 window.location.hostname.includes('github.com');
+            
+            // Set image path prefix
+            const imgPath = (isLocalFile || !isGitHubPages) ? 'img/' : '/img/';
+            
+            // Update hero background images
+            const hero = document.querySelector('.hero');
+            if (hero) {
+                const darkBg = `linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('${imgPath}background.png')`;
+                const lightBg = `linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('${imgPath}backgroundlight.png')`;
+                
+                hero.style.backgroundImage = darkBg;
+                
+                // Update ::before pseudo-element via style tag
+                const styleId = 'hero-bg-style';
+                let styleElement = document.getElementById(styleId);
+                if (!styleElement) {
+                    styleElement = document.createElement('style');
+                    styleElement.id = styleId;
+                    document.head.appendChild(styleElement);
+                }
+                styleElement.textContent = `
+                    .hero::before {
+                        background-image: ${lightBg};
+                    }
+                `;
+            }
+        })();
+        
         // Theme Toggle Functionality
         (function() {
             const themeToggle = document.getElementById('theme-toggle');
