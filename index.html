@@ -247,6 +247,7 @@
         
         /* Hero Section */
         .hero {
+            position: relative;
             background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('img/background.png');
             background-size: cover;
             background-position: center;
@@ -254,6 +255,33 @@
             text-align: center;
             padding: 180px 0 120px;
             margin-top: 0;
+            overflow: hidden;
+            transition: background-image 0.6s ease;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('img/backgroundlight.png');
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        [data-theme="light"] .hero::before {
+            opacity: 1;
+        }
+        
+        .hero > * {
+            position: relative;
+            z-index: 1;
         }
         
         .hero h1 {
@@ -318,7 +346,8 @@
             border: 1px solid var(--border-color);
         }
         
-        .icon-link:hover {
+        .icon-link:hover,
+        .icon-link.mobile-glow {
             background: rgba(138, 43, 226, 0.1);
             color: var(--primary);
             transform: translateY(-3px);
@@ -350,7 +379,8 @@
         }
         
         /* Glow effect for clickable skill card (Tableau de compétences) */
-        .skill-card:has(.view-cert-btn):hover {
+        .skill-card:has(.view-cert-btn):hover,
+        .skill-card:has(.view-cert-btn).mobile-glow {
             box-shadow: 0 15px 35px rgba(138, 43, 226, 0.4);
         }
         
@@ -394,6 +424,46 @@
             transform: translateY(0);
         }
         
+        /* Branch lines connecting timeline to events */
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            height: 3px;
+            background: var(--primary);
+            width: 0;
+            transition: width 0.4s ease;
+            z-index: 1;
+            box-shadow: 0 0 5px rgba(138, 43, 226, 0.5);
+        }
+        
+        /* Odd items (left side) - branch extends from center line (right edge of item) LEFT towards content */
+        .timeline-item:nth-child(odd)::before {
+            left: 100%;
+            transform: translateY(-50%) translateX(-100%);
+            background: linear-gradient(to left, var(--primary), var(--accent));
+        }
+        
+        /* Even items (right side) - branch extends from center line (left edge of item) RIGHT towards content */
+        .timeline-item:nth-child(even)::before {
+            left: 0;
+            transform: translateY(-50%);
+            background: linear-gradient(to right, var(--primary), var(--accent));
+        }
+        
+        .timeline-item.branch-visible:nth-child(odd)::before {
+            width: 40px;
+        }
+        
+        .timeline-item.branch-visible:nth-child(even)::before {
+            width: 40px;
+        }
+        
+        .timeline-content {
+            position: relative;
+            z-index: 2;
+        }
+        
         .timeline-item:nth-child(odd) {
             left: 0;
         }
@@ -416,7 +486,8 @@
             transition: all 0.3s;
         }
         
-        .timeline-content.clickable:hover {
+        .timeline-content.clickable:hover,
+        .timeline-content.clickable.mobile-glow {
             transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(138, 43, 226, 0.3);
             border-left: 4px solid var(--primary);
@@ -479,7 +550,8 @@
             transition: all 0.3s ease;
         }
         
-        .cert-card:hover {
+        .cert-card:hover,
+        .cert-card.mobile-glow {
             transform: translateY(-5px);
             box-shadow: 0 10px 25px rgba(138, 43, 226, 0.4);
         }
@@ -507,7 +579,8 @@
             border: 1px solid var(--border-color);
         }
         
-        .project-card:hover {
+        .project-card:hover,
+        .project-card.mobile-glow {
             transform: translateY(-10px);
             box-shadow: 0 15px 35px rgba(138, 43, 226, 0.4);
         }
@@ -658,6 +731,56 @@
             border-radius: 5px;
         }
         
+        /* Loading Spinner */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            min-height: 400px;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(138, 43, 226, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .loading-text {
+            margin-top: 20px;
+            color: var(--text);
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .modal-content-content {
+            display: none;
+        }
+        
+        .modal-content-content.active {
+            display: block;
+        }
+        
+        #mailto-content a {
+            transition: all 0.3s ease;
+        }
+        
+        #mailto-content a:hover {
+            background: var(--primary-dark) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             /* Header */
@@ -796,6 +919,17 @@
             
             .timeline-item:nth-child(even) {
                 left: 0;
+            }
+            
+            /* Branch lines for mobile - all extend to the right */
+            .timeline-item::before {
+                left: 31px !important;
+                right: auto !important;
+                transform: translateY(-50%) !important;
+            }
+            
+            .timeline-item.branch-visible::before {
+                width: 40px;
             }
             
             /* Certifications Section */
@@ -1098,7 +1232,7 @@
                     </div>
                 </div>
                 <div class="timeline-item">
-                    <div class="timeline-content">
+                    <div class="timeline-content clickable" data-url="https://www.recrutement.leclerc/nos-metiers/au-plus-proche-de-nos-clients/hote-de-caisse/" data-open-new-tab="true">
                         <div class="timeline-date">2023-2025</div>
                         <h3>Caissier - Leclerc Lannion</h3>
                         <p>6 mois (vacances scolaires)</p>
@@ -1246,6 +1380,10 @@
     <!-- PDF Modal -->
     <div id="pdf-modal" class="modal">
         <div class="modal-content">
+            <div id="loading-container" class="loading-container" style="display: none;">
+                <div class="spinner"></div>
+                <div class="loading-text">Envoi en cours...</div>
+            </div>
             <iframe id="pdf-viewer" src=""></iframe>
         </div>
     </div>
@@ -1400,14 +1538,43 @@
         const modal = document.getElementById('pdf-modal');
         const pdfViewer = document.getElementById('pdf-viewer');
         
+        // Function to show loading in modal
+        function showLoading(message = 'Envoi en cours...') {
+            const loadingContainer = document.getElementById('loading-container');
+            const loadingText = loadingContainer.querySelector('.loading-text');
+            loadingText.textContent = message;
+            loadingContainer.style.display = 'flex';
+            pdfViewer.style.display = 'none';
+            modal.style.display = 'block';
+        }
+        
+        // Function to hide loading and show content
+        function hideLoading() {
+            const loadingContainer = document.getElementById('loading-container');
+            loadingContainer.style.display = 'none';
+            pdfViewer.style.display = 'block';
+        }
+        
         // Function to open modal with PDF
         function openPDF(pdfPath) {
+            hideLoading();
+            const mailtoContent = document.getElementById('mailto-content');
+            if (mailtoContent) {
+                mailtoContent.style.display = 'none';
+            }
+            pdfViewer.style.display = 'block';
             pdfViewer.src = pdfPath;
             modal.style.display = 'block';
         }
         
         // Function to open modal with URL
         function openURL(url) {
+            hideLoading();
+            const mailtoContent = document.getElementById('mailto-content');
+            if (mailtoContent) {
+                mailtoContent.style.display = 'none';
+            }
+            pdfViewer.style.display = 'block';
             pdfViewer.src = url;
             modal.style.display = 'block';
         }
@@ -1435,8 +1602,18 @@
             item.addEventListener('click', function(e) {
                 e.preventDefault();
                 const url = this.getAttribute('data-url');
+                const openNewTab = this.getAttribute('data-open-new-tab') === 'true';
+                
                 if (url) {
-                    openURL(url);
+                    if (openNewTab) {
+                        // Open in new tab and switch to it
+                        const newTab = window.open(url, '_blank');
+                        if (newTab) {
+                            newTab.focus();
+                        }
+                    } else {
+                        openURL(url);
+                    }
                 }
             });
         });
@@ -1446,6 +1623,12 @@
             if (e.target === modal) {
                 modal.style.display = 'none';
                 pdfViewer.src = '';
+                pdfViewer.style.display = 'block';
+                const mailtoContent = document.getElementById('mailto-content');
+                if (mailtoContent) {
+                    mailtoContent.style.display = 'none';
+                }
+                hideLoading();
             }
         });
         
@@ -1467,6 +1650,61 @@
         document.querySelectorAll('section').forEach(section => {
             observer.observe(section);
         });
+        
+        // Mobile Glow Animation on Scroll
+        (function() {
+            // Detect if device is mobile/touch device
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                            (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) ||
+                            ('ontouchstart' in window);
+            
+            if (isMobile) {
+                // Create observer for glow effects
+                const glowObserverOptions = {
+                    threshold: 0.3,
+                    rootMargin: '0px 0px -100px 0px'
+                };
+                
+                const glowObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('mobile-glow');
+                        } else {
+                            // Remove glow when element leaves viewport
+                            entry.target.classList.remove('mobile-glow');
+                        }
+                    });
+                }, glowObserverOptions);
+                
+                // Observe elements with glow effects
+                // Timeline clickable items
+                document.querySelectorAll('.timeline-content.clickable').forEach(element => {
+                    glowObserver.observe(element);
+                });
+                
+                // Cert cards
+                document.querySelectorAll('.cert-card').forEach(element => {
+                    glowObserver.observe(element);
+                });
+                
+                // Project cards
+                document.querySelectorAll('.project-card').forEach(element => {
+                    glowObserver.observe(element);
+                });
+                
+                // Skill cards with view-cert-btn (Tableau de compétences)
+                document.querySelectorAll('.skill-card').forEach(card => {
+                    if (card.querySelector('.view-cert-btn')) {
+                        glowObserver.observe(card);
+                    }
+                });
+                
+                // Icon links
+                document.querySelectorAll('.icon-link').forEach(element => {
+                    glowObserver.observe(element);
+                });
+            }
+        })();
         
         // Timeline Progressive Animation
         function animateTimeline() {
@@ -1502,6 +1740,7 @@
                     // Keep all items visible
                     timelineItems.forEach((item) => {
                         item.classList.add('visible');
+                        item.classList.add('branch-visible');
                     });
                     return;
                 }
@@ -1570,6 +1809,11 @@
                     const itemHeight = item.offsetHeight;
                     const itemCenter = itemTop + itemHeight / 2;
                     
+                    // Show branch line slightly before the item appears (60px before center)
+                    if (lineHeight >= itemCenter - 60) {
+                        item.classList.add('branch-visible');
+                    }
+                    
                     // Show item when line reaches its position (with small offset for smooth appearance)
                     // Once visible, it stays visible because maxProgress never decreases
                     if (lineHeight >= itemCenter - 30) {
@@ -1633,6 +1877,9 @@
                     submitBtn.textContent = 'Envoi en cours...';
                     formMessage.style.display = 'none';
                     
+                    // Show loading in modal
+                    showLoading('Envoi en cours...');
+                    
                     // Get form data
                     const formData = {
                         from_name: document.getElementById('name').value,
@@ -1648,37 +1895,89 @@
                             EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID' || 
                             EMAILJS_TEMPLATE_ID === 'YOUR_TEMPLATE_ID') {
                             // Fallback to mailto if EmailJS not configured
+                            // Show mailto link in modal instead of opening email client
                             const emailBody = `Nom: ${formData.from_name}\nEmail: ${formData.from_email}\n\nMessage:\n${formData.message}`;
                             const mailtoLink = `mailto:srafferty.ledantec@gmail.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(emailBody)}`;
-                            window.location.href = mailtoLink;
                             
-                            formMessage.style.display = 'block';
-                            formMessage.style.backgroundColor = 'rgba(138, 43, 226, 0.1)';
-                            formMessage.style.color = 'var(--primary)';
-                            formMessage.style.border = '1px solid var(--primary)';
-                            formMessage.textContent = 'Ouverture de votre client email...';
+                            // Create a clickable link in the modal
+                            setTimeout(() => {
+                                hideLoading();
+                                const mailtoHTML = `
+                                    <div style="padding: 40px; text-align: center;">
+                                        <h3 style="color: var(--accent); margin-bottom: 20px;">Email prêt à être envoyé</h3>
+                                        <p style="margin-bottom: 30px; color: var(--text);">Cliquez sur le lien ci-dessous pour ouvrir votre client email avec le message pré-rempli :</p>
+                                        <a href="${mailtoLink}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: var(--primary); color: white; padding: 15px 30px; border-radius: 5px; text-decoration: none; font-weight: 600; transition: all 0.3s;">
+                                            <i class="fas fa-envelope" style="margin-right: 10px;"></i>Ouvrir le client email
+                                        </a>
+                                        <p style="margin-top: 20px; color: var(--text-muted); font-size: 14px;">Ou copiez cette adresse : srafferty.ledantec@gmail.com</p>
+                                    </div>
+                                `;
+                                pdfViewer.style.display = 'none';
+                                const modalContent = document.querySelector('.modal-content');
+                                let mailtoDiv = document.getElementById('mailto-content');
+                                if (!mailtoDiv) {
+                                    mailtoDiv = document.createElement('div');
+                                    mailtoDiv.id = 'mailto-content';
+                                    modalContent.appendChild(mailtoDiv);
+                                }
+                                mailtoDiv.innerHTML = mailtoHTML;
+                                mailtoDiv.style.display = 'block';
+                            }, 1000);
+                            
                             contactForm.reset();
                         } else {
                             // Send email using EmailJS
                             await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, formData);
                             
-                            // Success message
-                            formMessage.style.display = 'block';
-                            formMessage.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
-                            formMessage.style.color = '#4caf50';
-                            formMessage.style.border = '1px solid #4caf50';
-                            formMessage.textContent = 'Message envoyé avec succès! Je vous répondrai bientôt.';
+                            // Success message in modal
+                            hideLoading();
+                            const successHTML = `
+                                <div style="padding: 40px; text-align: center;">
+                                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: rgba(76, 175, 80, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-check-circle" style="font-size: 40px; color: #4caf50;"></i>
+                                    </div>
+                                    <h3 style="color: #4caf50; margin-bottom: 15px;">Message envoyé avec succès!</h3>
+                                    <p style="color: var(--text);">Je vous répondrai bientôt.</p>
+                                </div>
+                            `;
+                            pdfViewer.style.display = 'none';
+                            const modalContent = document.querySelector('.modal-content');
+                            let successDiv = document.getElementById('mailto-content');
+                            if (!successDiv) {
+                                successDiv = document.createElement('div');
+                                successDiv.id = 'mailto-content';
+                                modalContent.appendChild(successDiv);
+                            }
+                            successDiv.innerHTML = successHTML;
+                            successDiv.style.display = 'block';
+                            
                             contactForm.reset();
                         }
                     } catch (error) {
                         console.error('Error sending email:', error);
                         
-                        // Error message
-                        formMessage.style.display = 'block';
-                        formMessage.style.backgroundColor = 'rgba(244, 67, 54, 0.1)';
-                        formMessage.style.color = '#f44336';
-                        formMessage.style.border = '1px solid #f44336';
-                        formMessage.textContent = 'Erreur lors de l\'envoi. Veuillez réessayer ou m\'envoyer un email directement.';
+                        // Error message in modal
+                        hideLoading();
+                        const errorHTML = `
+                            <div style="padding: 40px; text-align: center;">
+                                <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: rgba(244, 67, 54, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-exclamation-circle" style="font-size: 40px; color: #f44336;"></i>
+                                </div>
+                                <h3 style="color: #f44336; margin-bottom: 15px;">Erreur lors de l'envoi</h3>
+                                <p style="color: var(--text); margin-bottom: 20px;">Veuillez réessayer ou m'envoyer un email directement à :</p>
+                                <a href="mailto:srafferty.ledantec@gmail.com" style="color: var(--primary); text-decoration: underline;">srafferty.ledantec@gmail.com</a>
+                            </div>
+                        `;
+                        pdfViewer.style.display = 'none';
+                        const modalContent = document.querySelector('.modal-content');
+                        let errorDiv = document.getElementById('mailto-content');
+                        if (!errorDiv) {
+                            errorDiv = document.createElement('div');
+                            errorDiv.id = 'mailto-content';
+                            modalContent.appendChild(errorDiv);
+                        }
+                        errorDiv.innerHTML = errorHTML;
+                        errorDiv.style.display = 'block';
                     } finally {
                         // Reset button state
                         submitBtn.disabled = false;
