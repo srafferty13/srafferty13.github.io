@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Portfolio - Scott Rafferty</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <style>
         :root {
             --primary: #8a2be2;
@@ -16,10 +17,17 @@
             --card-bg: #1e1e1e;
             --body-bg: #121212;
             --header-bg: rgba(18, 18, 18, 0.95);
-            --border-color: rgba(138, 43, 226, 0.1);
+            --border-color: rgba(138, 43, 226, 0.15);
             --shadow-color: rgba(0, 0, 0, 0.3);
+            --badge-bg: rgba(138, 43, 226, 0.12);
+            --badge-text: #d5b7ff;
+            --comp-green: #2e9f5b;
+            --comp-red: #d94b5c;
+            --comp-blue: #2f7de1;
+            --comp-yellow: #d1a100;
+            --comp-orange: #e67e22;
+            --comp-pink: #d94fa6;
         }
-        
         [data-theme="light"] {
             --primary: #8a2be2;
             --primary-dark: #6a1cb0;
@@ -30,1992 +38,277 @@
             --card-bg: #ffffff;
             --body-bg: #f8f8f8;
             --header-bg: rgba(255, 255, 255, 0.95);
-            --border-color: rgba(138, 43, 226, 0.2);
+            --border-color: rgba(138, 43, 226, 0.18);
             --shadow-color: rgba(0, 0, 0, 0.1);
+            --badge-bg: rgba(138, 43, 226, 0.08);
+            --badge-text: #6a1cb0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        html { scroll-behavior: smooth; }
+        body { background-color: var(--body-bg); color: var(--text); line-height: 1.6; transition: background-color 0.3s ease, color 0.3s ease; overflow-x: hidden; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        section { padding: 80px 0; opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        section.visible { opacity: 1; transform: translateY(0); }
+        h1, h2, h3 { margin-bottom: 20px; color: var(--text); }
+        h1 { font-size: 3rem; }
+        h2 { font-size: 2.4rem; text-align: center; margin-bottom: 50px; position: relative; }
+        h2:after { content: ''; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); width: 80px; height: 4px; background: var(--primary); border-radius: 2px; }
+        p { margin-bottom: 15px; }
+        .section-intro { max-width: 850px; margin: 0 auto 35px; text-align: center; color: var(--text-muted); }
+        .btn { display: inline-block; background-color: var(--primary); color: white; padding: 12px 25px; border-radius: 6px; text-decoration: none; transition: all 0.3s; border: none; cursor: pointer; font-weight: 600; }
+        .btn:hover { background-color: var(--primary-dark); transform: translateY(-3px); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: var(--primary); color: white; }
+        .mini-btn { display: inline-block; margin-top: 15px; padding: 8px 14px; border-radius: 6px; text-decoration: none; background: rgba(138, 43, 226, 0.1); color: var(--accent); border: 1px solid var(--border-color); font-weight: 600; transition: all 0.3s ease; }
+        .mini-btn:hover { background: var(--primary); color: white; }
+        .badge-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .badge { display: inline-flex; align-items: center; padding: 8px 12px; border-radius: 999px; background: var(--badge-bg); color: var(--badge-text); border: 1px solid var(--border-color); font-size: 0.88rem; font-weight: 600; }
+        .badge.comp-gpi { background: rgba(46,159,91,0.14); color: var(--comp-green); border-color: rgba(46,159,91,0.45); }
+        .badge.comp-ri { background: rgba(217,75,92,0.14); color: var(--comp-red); border-color: rgba(217,75,92,0.45); }
+        .badge.comp-dpl { background: rgba(47,125,225,0.14); color: var(--comp-blue); border-color: rgba(47,125,225,0.45); }
+        .badge.comp-tmp { background: rgba(209,161,0,0.14); color: var(--comp-yellow); border-color: rgba(209,161,0,0.45); }
+        .badge.comp-msi { background: rgba(230,126,34,0.14); color: var(--comp-orange); border-color: rgba(230,126,34,0.45); }
+        .badge.comp-odp { background: rgba(217,79,166,0.14); color: var(--comp-pink); border-color: rgba(217,79,166,0.45); }
+        .table-badges { display:flex; flex-wrap:wrap; gap:8px; }
+        .project-card.no-project-icon .project-img { display:none; }
+        .compact-list { display: grid; gap: 10px; margin-top: 10px; }
+        .compact-item { padding: 10px 12px; border-radius: 10px; background: rgba(138, 43, 226, 0.05); border: 1px solid var(--border-color); }
+        .veille-actions { text-align: center; margin-top: 28px; }
+        header { background: rgba(18, 18, 18, 0.7); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); color: var(--text); padding: 0; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); position: fixed; width: 100%; top: 0; z-index: 1000; box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 2px 20px rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.08); transition: background 0.3s ease, box-shadow 0.3s ease; }
+        [data-theme="light"] header { background: rgba(255,255,255,0.7); box-shadow: 0 1px 0 rgba(0,0,0,0.05) inset, 0 2px 20px rgba(0,0,0,0.1); border-bottom: 1px solid rgba(0,0,0,0.08); }
+        header .container { padding: 0; max-width: 100%; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px; position: relative; }
+        .theme-toggle { background: transparent; border: 2px solid var(--primary); color: var(--primary); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: all 0.3s ease; margin-right: 20px; }
+        .theme-toggle:hover { background: var(--primary); color: white; transform: rotate(20deg) scale(1.1); }
+        .nav-left { display: flex; align-items: center; }
+        .logo { font-size: 24px; font-weight: bold; color: var(--accent); }
+        .menu-toggle { display: none; background: transparent; border: 2px solid var(--primary); color: var(--primary); width: 40px; height: 40px; border-radius: 5px; cursor: pointer; align-items: center; justify-content: center; font-size: 20px; transition: all 0.3s ease; }
+        .menu-toggle:hover { background: var(--primary); color: white; }
+        .nav-links { display: flex; list-style: none; }
+        .nav-links li { margin-left: 24px; }
+        .nav-links li:first-child { margin-left: 0; }
+        .nav-links a { color: var(--text); text-decoration: none; transition: all 0.3s; font-weight: 500; padding: 5px 10px; border-radius: 5px; }
+        .nav-links a:hover { color: var(--accent); background: rgba(138, 43, 226, 0.08); }
+        .hero { position: relative; background: url('img/background.png') center/cover no-repeat; color: white; text-align: center; padding: 180px 0 120px; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; inset: 0; background: url('img/backgroundlight.png') center/cover no-repeat; opacity: 0; transition: opacity 0.6s ease; z-index: 0; pointer-events: none; }
+        [data-theme="light"] .hero::before { opacity: 1; }
+        .hero .container { position: relative; z-index: 1; }
+        .hero-panel { display: inline-block; max-width: 640px; margin: 0 auto; padding: 36px 40px 40px; background: rgba(0, 0, 0, 0.72); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); }
+        [data-theme="light"] .hero-panel { background: rgba(0, 0, 0, 0.62); border-color: rgba(255, 255, 255, 0.12); }
+        .hero h1 { font-size: 48px; margin-bottom: 15px; color: white; }
+        .hero p { font-size: 19px; max-width: 820px; margin: 0 auto 16px; color: white; }
+        .hero-btns { display: flex; justify-content: center; gap: 15px; margin-top: 30px; flex-wrap: wrap; }
+        .about-content { display: flex; align-items: flex-start; gap: 50px; }
+        .about-text, .about-image { flex: 1; }
+        .about-image { text-align: center; }
+        .about-image img { width: 100%; max-width: 320px; height: auto; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .about-summary { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 26px; box-shadow: 0 5px 15px var(--shadow-color); }
+        .about-summary p:last-child { margin-bottom: 0; }
+        .icon-links { display: flex; gap: 15px; margin-top: 22px; flex-wrap: wrap; }
+        .icon-link { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; background: var(--card-bg); border-radius: 50%; color: var(--primary); text-decoration: none; transition: all 0.3s ease; border: 1px solid var(--border-color); }
+        .icon-link:hover { background: rgba(138, 43, 226, 0.1); transform: translateY(-3px); border-color: var(--primary); }
+        .tools-grid, .projects-grid, .certifications-grid, .watch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 28px; justify-items: center; }
+        .organization-card { grid-column: 2; }
+        #stages .projects-grid, #projets .projects-grid { grid-template-columns: repeat(2, minmax(420px, 1fr)); max-width: 1100px; margin: 0 auto; }
+        .tool-card, .project-card, .cert-card, .watch-card, .synthesis-card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 5px 15px var(--shadow-color); transition: all 0.3s ease; width: 100%; border: 1px solid var(--border-color); }
+        .tool-card, .cert-card, .watch-card, .synthesis-card { padding: 25px; }
+        .project-card { overflow: hidden; }
+        .tool-card:hover, .project-card:hover, .cert-card:hover, .watch-card:hover, .synthesis-card:hover { transform: translateY(-8px); box-shadow: 0 14px 34px rgba(138, 43, 226, 0.22); }
+        .tool-card h3, .project-card h3, .cert-card h3, .watch-card h3, .synthesis-card h3 { color: var(--accent); margin-bottom: 12px; }
+        .project-img { height: 200px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; background: linear-gradient(135deg, #6a1cb0, #8a2be2); }
+        .project-content { padding: 22px; }
+        .timeline { position: relative; max-width: 900px; margin: 0 auto; }
+        .timeline::after { content: ''; position: absolute; width: 6px; background: linear-gradient(to bottom, var(--primary), var(--accent)); top: 0; left: 50%; margin-left: -3px; height: 0; transition: height 0.1s ease-out; box-shadow: 0 0 10px rgba(138,43,226,0.45); }
+        .timeline-item { padding: 10px 40px; position: relative; width: 50%; opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .timeline-item.visible { opacity: 1; transform: translateY(0); }
+        .timeline-item::before { content: ''; position: absolute; top: 50%; height: 3px; width: 0; transition: width 0.4s ease; z-index: 1; box-shadow: 0 0 5px rgba(138,43,226,0.5); }
+        .timeline-item:nth-child(odd)::before { left: 100%; transform: translateY(-50%) translateX(-100%); background: linear-gradient(to left, var(--primary), var(--accent)); }
+        .timeline-item:nth-child(even)::before { left: 0; transform: translateY(-50%); background: linear-gradient(to right, var(--primary), var(--accent)); }
+        .timeline-item.branch-visible:nth-child(odd)::before, .timeline-item.branch-visible:nth-child(even)::before { width: 40px; }
+        .timeline-content { position: relative; z-index: 2; padding: 22px; background-color: var(--card-bg); border-radius: 12px; box-shadow: 0 5px 15px var(--shadow-color); border: 1px solid var(--border-color); transition: all 0.3s ease; }
+        .timeline-content.clickable { cursor: pointer; }
+        .timeline-content.clickable:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(138,43,226,0.25); border-left: 4px solid var(--primary); }
+        .timeline-date { font-weight: bold; color: var(--accent); margin-bottom: 8px; }
+        .timeline-item:nth-child(odd) { left: 0; }
+        .timeline-item:nth-child(even) { left: 50%; }
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 5px 15px var(--shadow-color); }
+        table { border-collapse: collapse; width: 100%; min-width: 900px; }
+        th, td { padding: 16px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border-color); }
+        th { background: rgba(138, 43, 226, 0.08); color: var(--accent); font-size: 0.95rem; }
+        tr:hover td { background: rgba(138, 43, 226, 0.03); }
+        .contact-form-container { display: flex; gap: 40px; margin-top: 40px; align-items: flex-start; }
+        .contact-info, .contact-form, .map-container { flex: 1; }
+        .contact-info { padding: 20px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 5px 15px var(--shadow-color); border: 1px solid var(--border-color); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--text-muted); }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--card-bg); color: var(--text); transition: all 0.3s ease; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 10px rgba(138,43,226,0.25); }
+        #map { height: 400px; width: 100%; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: 1px solid var(--border-color); }
+        footer { background-color: var(--body-bg); color: var(--text-muted); text-align: center; padding: 30px 0; border-top: 1px solid var(--border-color); }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); }
+        .modal-content { position: relative; background-color: var(--card-bg); margin: 5% auto; padding: 20px; width: 80%; max-width: 950px; border-radius: 12px; box-shadow: 0 5px 15px var(--shadow-color); border: 1px solid var(--border-color); }
+        #pdf-viewer { width: 100%; height: 80vh; border: none; border-radius: 6px; }
+        .close { color: var(--text-muted); float: right; font-size: 28px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        .close:hover { color: var(--accent); }
+        .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; min-height: 400px; }
+        .spinner { width: 60px; height: 60px; border: 4px solid rgba(138, 43, 226, 0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { margin-top: 20px; color: var(--text); font-size: 18px; font-weight: 500; }
+        @media (max-width: 900px) {
+            .about-content, .contact-form-container { flex-direction: column; }
+            #stages .projects-grid, #projets .projects-grid { grid-template-columns: 1fr; max-width: none; }
+            .timeline::after { left: 30px; }
+            .timeline-item { width: 100%; padding-left: 70px; padding-right: 15px; }
+            .timeline-item:nth-child(even) { left: 0; }
+            .timeline-item::before { left: 30px !important; transform: translateY(-50%) !important; }
+            .organization-card { grid-column: auto; }
+            #map { height: 280px; }
         }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: var(--body-bg);
-            color: var(--text);
-            line-height: 1.6;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        section {
-            padding: 80px 0;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-        
-        section.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        h1, h2, h3 {
-            margin-bottom: 20px;
-            color: var(--text);
-        }
-        
-        h1 {
-            font-size: 3rem;
-        }
-        
-        h2 {
-            font-size: 2.5rem;
-            text-align: center;
-            margin-bottom: 50px;
-            position: relative;
-        }
-        
-        h2:after {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: var(--primary);
-            border-radius: 2px;
-        }
-        
-        p {
-            margin-bottom: 15px;
-        }
-        
-        .btn {
-            display: inline-block;
-            background-color: var(--primary);
-            color: white;
-            padding: 12px 25px;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: all 0.3s;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        
-        .btn:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-3px);
-        }
-        
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-        
-        .btn-outline:hover {
-            background: var(--primary);
-            color: white;
-        }
-        
-        /* Header */
-        header {
-            background: rgba(18, 18, 18, 0.7);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            color: var(--text);
-            padding: 0;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 2px 20px rgba(0, 0, 0, 0.2);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            transition: background 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        [data-theme="light"] header {
-            background: rgba(255, 255, 255, 0.7);
-            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05) inset, 0 2px 20px rgba(0, 0, 0, 0.1);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-        
-        header .container {
-            padding: 0;
-            max-width: 100%;
-        }
-        
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            position: relative;
-        }
-        
-        .theme-toggle {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            transition: all 0.3s ease;
-            margin-right: 20px;
-        }
-        
-        .theme-toggle:hover {
-            background: var(--primary);
-            color: white;
-            transform: rotate(20deg) scale(1.1);
-        }
-        
-        .nav-left {
-            display: flex;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--accent);
-            transition: color 0.3s ease;
-        }
-        
-        .menu-toggle {
-            display: none;
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            width: 40px;
-            height: 40px;
-            border-radius: 5px;
-            cursor: pointer;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            transition: all 0.3s ease;
-        }
-        
-        .menu-toggle:hover {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .nav-links {
-            display: flex;
-            list-style: none;
-        }
-        
-        .nav-links li {
-            margin-left: 30px;
-        }
-        
-        .nav-links li:first-child {
-            margin-left: 0;
-        }
-        
-        .nav-links a {
-            color: var(--text);
-            text-decoration: none;
-            transition: all 0.3s;
-            font-weight: 500;
-            padding: 5px 10px;
-            border-radius: 5px;
-            position: relative;
-        }
-        
-        .nav-links a:hover {
-            color: var(--accent);
-            text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
-            transform: translateY(-2px);
-        }
-        
-        /* Hero Section */
-        .hero {
-            position: relative;
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('img/background.png');
-            background-size: cover;
-            background-position: center;
-            color: white;
-            text-align: center;
-            padding: 180px 0 120px;
-            margin-top: 0;
-            overflow: hidden;
-            transition: background-image 0.6s ease;
-        }
-        
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('img/backgroundlight.png');
-            background-size: cover;
-            background-position: center;
-            opacity: 0;
-            transition: opacity 0.6s ease;
-            z-index: -1;
-            pointer-events: none;
-        }
-        
-        [data-theme="light"] .hero::before {
-            opacity: 1;
-        }
-        
-        .hero > * {
-            position: relative;
-            z-index: 1;
-        }
-        
-        .hero h1 {
-            font-size: 48px;
-            margin-bottom: 20px;
-            color: white;
-        }
-        
-        .hero p {
-            font-size: 20px;
-            max-width: 700px;
-            margin: 0 auto 30px;
-            color: white;
-        }
-        
-        .hero-btns {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        
-        /* About Section */
-        .about-content {
-            display: flex;
-            align-items: center;
-            gap: 50px;
-        }
-        
-        .about-text {
-            flex: 1;
-        }
-        
-        .about-image {
-            flex: 1;
-            text-align: center;
-        }
-        
-        .about-image img {
-            max-width: 100%;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        
-        .icon-links {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .icon-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: var(--card-bg);
-            border-radius: 50%;
-            color: var(--primary);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border: 1px solid var(--border-color);
-        }
-        
-        .icon-link:hover,
-        .icon-link.mobile-glow {
-            background: rgba(138, 43, 226, 0.1);
-            color: var(--primary);
-            transform: translateY(-3px);
-            border-color: var(--primary);
-        }
-        
-        /* Skills Section */
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
-            justify-items: center;
-        }
-        
-        .skill-card {
-            background-color: var(--card-bg);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px var(--shadow-color);
-            transition: all 0.3s ease;
-            border-left: 4px solid var(--primary);
-            width: 100%;
-            max-width: 350px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .skill-card:hover {
-            transform: translateY(-10px);
-        }
-        
-        /* Glow effect for clickable skill card (Tableau de compétences) */
-        .skill-card:has(.view-cert-btn):hover,
-        .skill-card:has(.view-cert-btn).mobile-glow {
-            box-shadow: 0 15px 35px rgba(138, 43, 226, 0.4);
-        }
-        
-        .skill-card h3 {
-            color: var(--accent);
-            margin-bottom: 15px;
-        }
-        
-        /* Experience Section */
-        .timeline {
-            position: relative;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .timeline::after {
-            content: '';
-            position: absolute;
-            width: 6px;
-            background: linear-gradient(to bottom, var(--primary), var(--accent));
-            top: 0;
-            left: 50%;
-            margin-left: -3px;
-            height: 0;
-            transition: height 0.1s ease-out;
-            box-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
-        }
-        
-        .timeline-item {
-            padding: 10px 40px;
-            position: relative;
-            width: 50%;
-            box-sizing: border-box;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-        
-        .timeline-item.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        /* Branch lines connecting timeline to events */
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            height: 3px;
-            background: var(--primary);
-            width: 0;
-            transition: width 0.4s ease;
-            z-index: 1;
-            box-shadow: 0 0 5px rgba(138, 43, 226, 0.5);
-        }
-        
-        /* Odd items (left side) - branch extends from center line (right edge of item) LEFT towards content */
-        .timeline-item:nth-child(odd)::before {
-            left: 100%;
-            transform: translateY(-50%) translateX(-100%);
-            background: linear-gradient(to left, var(--primary), var(--accent));
-        }
-        
-        /* Even items (right side) - branch extends from center line (left edge of item) RIGHT towards content */
-        .timeline-item:nth-child(even)::before {
-            left: 0;
-            transform: translateY(-50%);
-            background: linear-gradient(to right, var(--primary), var(--accent));
-        }
-        
-        .timeline-item.branch-visible:nth-child(odd)::before {
-            width: 40px;
-        }
-        
-        .timeline-item.branch-visible:nth-child(even)::before {
-            width: 40px;
-        }
-        
-        .timeline-content {
-            position: relative;
-            z-index: 2;
-        }
-        
-        .timeline-item:nth-child(odd) {
-            left: 0;
-        }
-        
-        .timeline-item:nth-child(even) {
-            left: 50%;
-        }
-        
-        .timeline-content {
-            padding: 20px;
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            box-shadow: 0 5px 15px var(--shadow-color);
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-        
-        .timeline-content.clickable {
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .timeline-content.clickable:hover,
-        .timeline-content.clickable.mobile-glow {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(138, 43, 226, 0.3);
-            border-left: 4px solid var(--primary);
-        }
-        
-        .timeline-date {
-            font-weight: bold;
-            color: var(--accent);
-        }
-        
-        /* Interests Section */
-        .interests-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            justify-items: center;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .interest-card {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 10px;
-            text-align: center;
-            transition: all 0.3s ease;
-            width: 100%;
-            max-width: 220px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .interest-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .interest-card i {
-            font-size: 2rem;
-            margin-bottom: 15px;
-            color: #8a2be2; /* Purple-red color */
-        }
-        
-        /* Certifications Section */
-        .certifications-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-            justify-items: center;
-        }
-        
-        .cert-card {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 10px;
-            width: 100%;
-            max-width: 350px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-        
-        .cert-card:hover,
-        .cert-card.mobile-glow {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(138, 43, 226, 0.4);
-        }
-        
-        .cert-card h3 {
-            color: var(--accent);
-        }
-        
-        /* Projects Section */
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
-            justify-items: center;
-        }
-        
-        .project-card {
-            background: var(--card-bg);
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px var(--shadow-color);
-            transition: all 0.3s ease;
-            width: 100%;
-            max-width: 350px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .project-card:hover,
-        .project-card.mobile-glow {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(138, 43, 226, 0.4);
-        }
-        
-        .project-img {
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-        }
-        
-        .project-content {
-            padding: 20px;
-        }
-        
-        .project-content h3 {
-            color: var(--accent);
-            margin-bottom: 10px;
-        }
-        
-        /* Contact Section */
-        .contact-form-container {
-            display: flex;
-            gap: 40px;
-            margin-top: 40px;
-            align-items: flex-start;
-        }
-        
-        .contact-info {
-            flex: 1;
-            padding: 20px;
-            background: var(--card-bg);
-            border-radius: 10px;
-            box-shadow: 0 5px 15px var(--shadow-color);
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-        
-        .contact-form {
-            flex: 1;
-        }
-        
-        .map-container {
-            flex: 1;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--text-muted);
-        }
-        
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            background: var(--card-bg);
-            color: var(--text);
-            transition: all 0.3s ease;
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
-        }
-        
-        #form-message {
-            transition: all 0.3s ease;
-        }
-        
-        #submit-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        
-        /* Map Section */
-        #map {
-            height: 400px;
-            width: 100%;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        /* Footer */
-        footer {
-            background-color: var(--body-bg);
-            color: var(--text-muted);
-            text-align: center;
-            padding: 30px 0;
-            border-top: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-        
-        .social-links {
-            margin: 20px 0;
-        }
-        
-        .social-links a {
-            color: var(--text-muted);
-            margin: 0 10px;
-            font-size: 20px;
-            transition: color 0.3s;
-        }
-        
-        .social-links a:hover {
-            color: var(--accent);
-        }
-        
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.8);
-        }
-        
-        .modal-content {
-            position: relative;
-            background-color: var(--card-bg);
-            margin: 5% auto;
-            padding: 20px;
-            width: 80%;
-            max-width: 900px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px var(--shadow-color);
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-        
-        #pdf-viewer {
-            width: 100%;
-            height: 80vh;
-            border: none;
-            border-radius: 5px;
-        }
-        
-        /* Loading Spinner */
-        .loading-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 60px 20px;
-            min-height: 400px;
-        }
-        
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(138, 43, 226, 0.1);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        
-        .loading-text {
-            margin-top: 20px;
-            color: var(--text);
-            font-size: 18px;
-            font-weight: 500;
-        }
-        
-        .modal-content-content {
-            display: none;
-        }
-        
-        .modal-content-content.active {
-            display: block;
-        }
-        
-        #mailto-content a {
-            transition: all 0.3s ease;
-        }
-        
-        #mailto-content a:hover {
-            background: var(--primary-dark) !important;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
-        }
-        
-        /* Responsive */
         @media (max-width: 768px) {
-            /* Header */
-            nav {
-                padding: 15px;
-            }
-            
-            .logo {
-                font-size: 20px;
-            }
-            
-            .theme-toggle {
-                width: 40px;
-                height: 40px;
-                font-size: 18px;
-                margin-right: 15px;
-            }
-            
-            .menu-toggle {
-                display: flex;
-            }
-            
-            .nav-links {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
-                background: var(--header-bg);
-                backdrop-filter: blur(20px) saturate(180%);
-                -webkit-backdrop-filter: blur(20px) saturate(180%);
-                flex-direction: column;
-                padding: 20px;
-                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            
-            .nav-links.active {
-                display: flex;
-            }
-            
-            .nav-links li {
-                margin: 10px 0;
-                margin-left: 0;
-                width: 100%;
-            }
-            
-            .nav-links a {
-                display: block;
-                padding: 12px;
-                width: 100%;
-                border-radius: 5px;
-            }
-            
-            .nav-links a:hover {
-                background: rgba(138, 43, 226, 0.1);
-            }
-            
-            /* Hero Section */
-            .hero {
-                padding: 140px 0 80px;
-            }
-            
-            .hero h1 {
-                font-size: 32px;
-            }
-            
-            .hero p {
-                font-size: 16px;
-                padding: 0 20px;
-            }
-            
-            .hero-btns {
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
-            }
-            
-            .hero-btns .btn {
-                width: 90%;
-                max-width: 300px;
-                margin-bottom: 0;
-            }
-            
-            /* Sections */
-            section {
-                padding: 50px 0;
-            }
-            
-            h2 {
-                font-size: 2rem;
-                margin-bottom: 30px;
-            }
-            
-            /* About Section */
-            .about-content {
-                flex-direction: column;
-                gap: 30px;
-            }
-            
-            .about-image {
-                margin-top: 20px;
-            }
-            
-            /* Skills Section */
-            .skills-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .skill-card {
-                max-width: 100%;
-            }
-            
-            /* Interests Section */
-            .interests-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
-            }
-            
-            .interest-card {
-                max-width: 100%;
-                padding: 20px;
-            }
-            
-            /* Timeline */
-            .timeline::after {
-                left: 31px;
-            }
-            
-            .timeline-item {
-                width: 100%;
-                padding-left: 70px;
-                padding-right: 25px;
-            }
-            
-            .timeline-item:nth-child(even) {
-                left: 0;
-            }
-            
-            /* Branch lines for mobile - all extend to the right */
-            .timeline-item::before {
-                left: 31px !important;
-                right: auto !important;
-                transform: translateY(-50%) !important;
-            }
-            
-            .timeline-item.branch-visible::before {
-                width: 40px;
-            }
-            
-            /* Certifications Section */
-            .certifications-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .cert-card {
-                max-width: 100%;
-            }
-            
-            /* Projects Section */
-            .projects-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .project-card {
-                max-width: 100%;
-            }
-            
-            /* Contact Section */
-            .contact-form-container {
-                flex-direction: column;
-                gap: 30px;
-            }
-            
-            .contact-info,
-            .contact-form,
-            .map-container {
-                width: 100%;
-            }
-            
-            #map {
-                height: 300px;
-            }
-            
-            /* Modal */
-            .modal-content {
-                width: 95%;
-                margin: 10% auto;
-                padding: 15px;
-            }
-            
-            #pdf-viewer {
-                height: 70vh;
-            }
+            nav { padding: 12px 15px; }
+            .logo { font-size: 20px; }
+            .theme-toggle { width: 40px; height: 40px; font-size: 18px; margin-right: 12px; flex-shrink: 0; }
+            .menu-toggle { display: flex; flex-shrink: 0; }
+            .nav-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: var(--header-bg); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); flex-direction: column; padding: 16px 20px 24px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.08); max-height: min(75vh, 540px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+            .nav-links.active { display: flex; }
+            .nav-links li { margin: 6px 0; margin-left: 0; width: 100%; }
+            .nav-links a { display: flex; align-items: center; padding: 12px 14px; width: 100%; min-height: 44px; border-radius: 8px; box-sizing: border-box; }
+            .hero { padding: 132px 0 72px; padding-left: max(0px, env(safe-area-inset-left)); padding-right: max(0px, env(safe-area-inset-right)); }
+            .hero-panel { display: block; max-width: none; margin: 0; padding: 24px 18px 28px; }
+            .hero h1 { font-size: 34px; line-height: 1.15; }
+            .hero p { font-size: 16px; padding: 0 4px; }
+            .hero-btns { flex-direction: column; align-items: stretch; gap: 12px; }
+            .hero-btns .btn { width: 100%; max-width: none; min-height: 46px; text-align: center; box-sizing: border-box; }
+            section { padding: 55px 0; padding-left: max(0px, env(safe-area-inset-left)); padding-right: max(0px, env(safe-area-inset-right)); }
+            h2 { font-size: 2rem; margin-bottom: 35px; }
+            h3 { font-size: 1.15rem; }
+            .tools-grid, .projects-grid, .certifications-grid, .watch-grid { grid-template-columns: 1fr; gap: 20px; }
+            .project-content { padding: 18px; }
+            .tool-card, .cert-card, .watch-card, .synthesis-card { padding: 20px; }
+            .timeline-content { padding: 18px; }
+            .badge { font-size: 0.8rem; padding: 7px 10px; }
+            .mini-btn { min-height: 44px; padding: 10px 16px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; }
+            .mini-btn + .mini-btn { margin-left: 0; }
+            .btn { min-height: 46px; box-sizing: border-box; }
+            .table-wrap { margin-left: 0; margin-right: 0; }
+            th, td { padding: 12px 10px; font-size: 0.9rem; word-break: break-word; }
+            td .mini-btn { margin-top: 8px; margin-right: 6px; }
+            td .mini-btn[style*="margin-left"] { margin-left: 0 !important; }
+            .contact-form-container { gap: 28px; }
+            .modal-content { width: calc(100% - 24px); max-width: 100%; margin: 48px auto 16px; padding: 16px; box-sizing: border-box; }
+            #pdf-viewer { height: min(75vh, 480px); min-height: 240px; }
         }
-        
         @media (max-width: 480px) {
-            /* Extra small devices */
-            .container {
-                padding: 0 15px;
-            }
-            
-            nav {
-                padding: 12px 15px;
-            }
-            
-            .logo {
-                font-size: 18px;
-            }
-            
-            .theme-toggle {
-                width: 35px;
-                height: 35px;
-                font-size: 16px;
-                margin-right: 10px;
-            }
-            
-            .hero {
-                padding: 120px 0 60px;
-            }
-            
-            .hero h1 {
-                font-size: 28px;
-            }
-            
-            .hero p {
-                font-size: 14px;
-            }
-            
-            h2 {
-                font-size: 1.75rem;
-            }
-            
-            section {
-                padding: 40px 0;
-            }
-            
-            .interests-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .skills-grid,
-            .certifications-grid,
-            .projects-grid {
-                gap: 15px;
-            }
-            
-            .skill-card,
-            .cert-card,
-            .project-card,
-            .interest-card {
-                padding: 20px;
-            }
-            
-            .timeline-item {
-                padding-left: 60px;
-                padding-right: 15px;
-            }
-            
-            .contact-info {
-                padding: 15px;
-            }
-            
-            .form-group input,
-            .form-group textarea {
-                padding: 10px;
-            }
-            
-            .modal-content {
-                width: 98%;
-                margin: 5% auto;
-                padding: 10px;
-            }
-            
-            #pdf-viewer {
-                height: 60vh;
-            }
+            .container { padding: 0 15px; }
+            .hero { padding: 118px 0 60px; }
+            .hero-panel { padding: 20px 14px 24px; }
+            .hero h1 { font-size: 28px; }
+            .hero p { font-size: 14px; }
+            h2 { font-size: 1.75rem; margin-bottom: 28px; }
+            h3 { font-size: 1.05rem; }
+            section { padding: 40px 0; }
+            .about-summary { padding: 20px; }
+            .icon-link { width: 46px; height: 46px; }
+            #map { height: 220px; }
+            footer { padding: 24px 0 calc(24px + env(safe-area-inset-bottom)); }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="container">
-            <nav>
-                <div class="nav-left">
-                    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
-                        <i class="fas fa-moon" id="theme-icon"></i>
-                    </button>
-                    <div class="logo">Portfolio</div>
-                </div>
-                <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">
-                    <i class="fas fa-bars" id="menu-icon"></i>
-                </button>
-                <ul class="nav-links" id="nav-links">
-                    <li><a href="#accueil">Accueil</a></li>
-                    <li><a href="#apropos">À propos</a></li>
-                    <li><a href="#competences">Compétences</a></li>
-                    <li><a href="#experiences">Expériences</a></li>
-                    <li><a href="#certifications">Certifications</a></li>
-                    <li><a href="#projets">Projets</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-    <!-- Hero Section -->
-    <section id="accueil" class="hero">
-        <div class="container">
+<header>
+    <div class="container">
+        <nav>
+            <div class="nav-left">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Basculer le thème"><i class="fas fa-moon" id="theme-icon"></i></button>
+                <div class="logo">Portfolio</div>
+            </div>
+            <button class="menu-toggle" id="menu-toggle" aria-label="Ouvrir le menu"><i class="fas fa-bars" id="menu-icon"></i></button>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="#accueil">Accueil</a></li>
+                <li><a href="#apropos">Présentation</a></li>
+                <li><a href="#environnements">Outils</a></li>
+                <li><a href="#parcours">Parcours</a></li>
+                <li><a href="#stages">Stages</a></li>
+                <li><a href="#projets">Projets</a></li>
+                <li><a href="#certifications">Certifications</a></li>
+                <li><a href="#veille">Veille</a></li>
+                <li><a href="#realisations-personnelles">Réalisations perso</a></li>
+                <li><a href="#synthese">Tableau</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+<section id="accueil" class="hero">
+    <div class="container">
+        <div class="hero-panel">
             <h1>Scott Rafferty</h1>
             <p>Étudiant en BTS SIO 2ème année, option SISR</p>
-            <p>Recherche d'alternance ou stage en administration système, infrastructure, réseau et cybersécurité</p>
             <div class="hero-btns">
-                <a href="#contact" class="btn">Me contacter</a>
-                <a href="#projets" class="btn btn-outline">Voir mes projets</a>
+                <a href="#projets" class="btn">Voir les projets</a>
+                <a href="#synthese" class="btn btn-outline">Voir le tableau</a>
             </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="apropos" class="about">
-        <div class="container">
-            <h2>À propos de moi</h2>
-            <div class="about-content">
-                <div class="about-text">
-                    <p>Je suis actuellement en deuxième année de BTS Services Informatiques aux Organisations, option SISR (Solutions d'Infrastructure, Systèmes et Réseaux) au lycée Félix le Dantec à Lannion.</p>
-                    <p>Mes expériences professionnelles m'ont permis de développer un bon relationnel et une aisance dans la communication, des compétences essentielles pour travailler efficacement en équipe et répondre aux besoins des utilisateurs.</p>
-                    <p>Je suis motivé à rejoindre une entreprise dynamique afin de progresser aux côtés de vos équipes et de contribuer à l'installation, la gestion et la maintenance des infrastructures informatiques et réseaux.</p>
-                    
-                    <div class="icon-links">
-                        <a href="pdf/CV_Scott_Rafferty.pdf" class="icon-link" title="Télécharger mon CV">
-                            <i class="fas fa-file-pdf" style="color: #8a2be2;"></i>
-                        </a>
-                        <a href="https://github.com/srafferty13/docs" class="icon-link" title="Mon GitHub">
-                            <i class="fab fa-github" style="color: #8a2be2;"></i>
-                        </a>
-                        <a href="https://www.root-me.org/scott-rafferty" class="icon-link" title="Mon profil Root-me">
-                            <i class="fas fa-user-secret" style="color: #8a2be2;"></i>
-                        </a>
-                    </div>
-                </div>
-                <div class="about-image">
-                    <img src="img/Moi.png" alt="Scott Rafferty" style="width: 300px; height: 300px; object-fit: cover;">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Interests Section -->
-    <section id="interets" class="interests">
-        <div class="container">
-            <h2>Mes centres d'intérêt</h2>
-            <div class="interests-grid">
-                <div class="interest-card">
-                    <i class="fas fa-laptop-code"></i>
-                    <h3>Informatique</h3>
-                    <p>Passionné par les nouvelles technologies et la cybersécurité</p>
-                </div>
-                <div class="interest-card">
-                    <i class="fas fa-music"></i>
-                    <h3>Musique</h3>
-                    <p>Écoute et pratique de différents styles musicaux</p>
-                </div>
-                <div class="interest-card">
-                    <i class="fas fa-book"></i>
-                    <h3>Littérature</h3>
-                    <p>Lecture de romans et d'ouvrages techniques</p>
-                </div>
-                <div class="interest-card">
-                    <i class="fas fa-film"></i>
-                    <h3>Cinématographie</h3>
-                    <p>Passion pour le cinéma et la réalisation</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Skills Section -->
-    <section id="competences" class="skills">
-        <div class="container">
-            <h2>Mes compétences</h2>
-            <div class="skills-grid">
-                <div class="skill-card">
-                    <h3>Virtualisation</h3>
-                    <p>VM et Container sur VirtualBox et Proxmox</p>
-                </div>
-                <div class="skill-card">
-                    <h3>Réseaux et Protocoles</h3>
-                    <p>SSH, HTTPS, FTP, XRDP et services Web, DNS, DHCP, WSUS, NTP</p>
-                </div>
-                <div class="skill-card">
-                    <h3>Sécurisation</h3>
-                    <p>Switch, Routeur, Pare-feu, Point d'accès wifi</p>
-                </div>
-                <div class="skill-card">
-                    <h3>Outils collaboratifs</h3>
-                    <p>GitHub, Trello</p>
-                </div>
-                <div class="skill-card">
-                    <h3>Systèmes d'exploitation</h3>
-                    <p>Linux (Debian Shell/Xfce, Ubuntu), Windows 10/11, Cisco OS</p>
-                </div>
-                <div class="skill-card">
-                    <h3>Programmation</h3>
-                    <p>C#, HTML, CSS, JavaScript, PHP</p>
-                </div>
-                <div class="skill-card">
-                    <h3>Penetesting</h3>
-                    <p>Kali (nmap, Wireshark, owasp, openVas)</p>
-                </div>
-                <div class="skill-card">
-                    <h3>Matériels</h3>
-                    <p>Client léger (Axel 320), Point d'accès wifi, Routeur, Switch, Pare-feu</p>
-                </div>
-                <div class="skill-card">
-                    <h3>Tableau de compétences</h3>
-                    <p>Vue d'ensemble de mes compétences techniques</p>
-                    <a href="#" class="btn view-cert-btn" data-pdf="pdf/Tableau_de_competence.pdf" style="margin-top: 15px; padding: 8px 15px;">Voir le tableau</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Experience Section -->
-    <section id="experiences" class="experience">
-        <div class="container">
-            <h2>Mon parcours</h2>
-            <div class="timeline">
-                <div class="timeline-item">
-                    <div class="timeline-content clickable" data-url="https://www.idea-optical.com/">
-                        <div class="timeline-date">2020-2021</div>
-                        <h3>Stage - Idéa Optical Lannion</h3>
-                        <p>1 semaine (stage de 3ème)</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-content clickable" data-url="https://lycee-ledantec.fr/formation/bac-industriel-sti2d/sti2d/">
-                        <div class="timeline-date">2022-2024</div>
-                        <h3>Baccalauréat STI2D</h3>
-                        <p>Lycée Félix le Dantec, Lannion</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-content clickable" data-url="https://www.recrutement.leclerc/nos-metiers/au-plus-proche-de-nos-clients/hote-de-caisse/" data-open-new-tab="true">
-                        <div class="timeline-date">2023-2025</div>
-                        <h3>Caissier - Leclerc Lannion</h3>
-                        <p>6 mois (vacances scolaires)</p>
-                        <p>Développement du relationnel et de la communication</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-content clickable" data-url="https://lycee-ledantec.fr/formation/bts-sio-cybersecurite-lannion-formation-applications-informatique-avenir-reseaux-maintenance/">
-                        <div class="timeline-date">2024-2025</div>
-                        <h3>BTS SIO option SISR 1ère année</h3>
-                        <p>Lycée Félix le Dantec, Lannion</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-content clickable" data-url="https://www.microtel-guingamp.fr/">
-                        <div class="timeline-date">2024-2025</div>
-                        <h3>Stage - Microtel Club Guingamp</h3>
-                        <p>1 mois (stage de BTS SIO 1ère année)</p>
-                        <p>Accompagnement d'utilisateurs, prévention sur le phishing avec création d'un faux site de démonstration</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-content clickable" data-url="https://lycee-ledantec.fr/formation/bts-sio-cybersecurite-lannion-formation-applications-informatique-avenir-reseaux-maintenance/">
-                        <div class="timeline-date">2025-2026</div>
-                        <h3>BTS SIO option SISR 2ème année</h3>
-                        <p>Lycée Félix le Dantec, Lannion</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Certifications Section -->
-    <section id="certifications" class="certifications">
-        <div class="container">
-            <h2>Mes certifications</h2>
-            <div class="certifications-grid">
-                <div class="cert-card">
-                    <h3>SecNum</h3>
-                    <p>Plateforme de formation de l’ANSSI dédiée à la cybersécurité</p>
-                    <a href="#" class="btn view-cert-btn" data-pdf="pdf/SecNum.pdf" style="margin-top: 15px; padding: 8px 15px;">Voir la certification</a>
-                </div>
-                <div class="cert-card">
-                    <h3>RGPD</h3>
-                    <p>Formation sur le Règlement Général sur la Protection des Données</p>
-                    <a href="#" class="btn view-cert-btn" data-pdf="pdf/RGPD.pdf" style="margin-top: 15px; padding: 8px 15px;">Voir la certification</a>
-                </div>
-                <div class="cert-card">
-                    <h3>PIX</h3>
-                    <p>Plateforme nationale d’évaluation des compétences numériques</p>
-                    <a href="#" class="btn view-cert-btn" data-pdf="pdf/PIX.pdf" style="margin-top: 15px; padding: 8px 15px;">Voir la certification</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Projects Section -->
-    <section id="projets" class="projects">
-        <div class="container">
-            <h2>Mes projets</h2>
-            <div class="projects-grid">
-                <div class="project-card">
-                    <div class="project-img" style="background: linear-gradient(135deg, #8a2be2, #6a1cb0);">
-                        <i class="fas fa-network-wired"></i>
-                    </div>
-                    <div class="project-content">
-                        <h3>Atelier de professionalisation 1ère Année</h3>
-                        <p>Creation d'une infrastructure simple contenant un serveur web sous Apache2, un serveur DNS, un serveur RDP et 3 machines clientes</p>
-                        <a href="#" class="btn view-project-btn" data-pdf="img/Projet_1ereAnnee.png" style="margin-top: 15px; padding: 8px 15px;">Voir le projet</a>
-                    </div>
-                </div>
-                <div class="project-card">
-                    <div class="project-img" style="background: linear-gradient(135deg, #8a2be2, #6a1cb0);">
-                        <i class="fas fa-server"></i>
-                    </div>
-                    <div class="project-content">
-                        <h3>Atelier de professionalisation 2ère Année</h3>
-                        <p>Creation d'une infrastructure plus complexe contenant divers serveurs et machines clientes isolés en Vlan et un systeme de double routeur pare feu</p>
-                        <a href="#" class="btn view-project-btn" data-pdf="img/Projet_2emeAnnee.png" style="margin-top: 15px; padding: 8px 15px;">Voir le projet</a>
-                    </div>
-                </div>
-				<div class="project-card">
-                    <div class="project-img" style="background: linear-gradient(135deg, #8a2be2, #6a1cb0);">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <div class="project-content">
-                        <h3>Site de sensibilisation au phishing</h3>
-                        <p>Création d'un faux site de démonstration pour sensibiliser aux risques de cybersécurité</p>
-                        <a href="#" class="btn view-project-btn" data-pdf="vid/VideoExempleAttaquePhishing.mp4" style="margin-top: 15px; padding: 8px 15px;">Voir le projet</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="contact">
-        <div class="container">
-            <h2>Contactez-moi</h2>
-            <div class="contact-form-container">
-                <div class="contact-info">
-                    <h3 style="color: var(--accent); margin-bottom: 20px;">Informations de contact</h3>
-                    <p><i class="fas fa-phone" style="color: #8a2be2; margin-right: 10px;"></i><strong>Téléphone:</strong> 06 95 65 64 28</p>
-                    <p><i class="fas fa-envelope" style="color: #8a2be2; margin-right: 10px;"></i><strong>Email:</strong> srafferty.ledantec@gmail.com</p>
-                    <p><i class="fas fa-map-marker-alt" style="color: #8a2be2; margin-right: 10px;"></i><strong>Adresse:</strong> 5 rue Courbe, 22300 Lannion</p>
-                </div>
-                
-                <div class="contact-form">
-                    <form id="contact-form">
-                        <div id="form-message" style="display: none; padding: 15px; margin-bottom: 20px; border-radius: 5px; text-align: center;"></div>
-                        <div class="form-group">
-                            <label for="name">Nom</label>
-                            <input type="text" id="name" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="subject">Sujet</label>
-                            <input type="text" id="subject" name="subject" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="message">Message</label>
-                            <textarea id="message" name="message" rows="5" required></textarea>
-                        </div>
-                        <button type="submit" class="btn" id="submit-btn">Envoyer</button>
-                    </form>
-                </div>
-                
-                <div class="map-container">
-                    <div id="map"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 Scott Rafferty. Tous droits réservés.</p>
-        </div>
-    </footer>
-
-    <!-- PDF Modal -->
-    <div id="pdf-modal" class="modal">
-        <div class="modal-content">
-            <div id="loading-container" class="loading-container" style="display: none;">
-                <div class="spinner"></div>
-                <div class="loading-text">Envoi en cours...</div>
-            </div>
-            <iframe id="pdf-viewer" src=""></iframe>
         </div>
     </div>
-
-    <!-- OpenStreetMap Integration -->
-    <script>
-        // Initialize the map
-        function initMap() {
-            // Coordinates for lieu de formation
-            const lieuFormation = [48.730965037939235, -3.4481495078607427];
-            
-            // Create the map
-            const map = L.map('map').setView(lieuFormation, 15);
-            
-            // Add OpenStreetMap tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            
-            // Add a marker
-            L.marker(lieuFormation).addTo(map)
-                .bindPopup('Lieu de formation')
-                .openPopup();
-        }
-        
-        // Load the map when the page loads
-        window.onload = function() {
-            // Check if Leaflet is loaded
-            if (typeof L !== 'undefined') {
-                initMap();
-            } else {
-                // If Leaflet isn't loaded, try again after a short delay
-                setTimeout(initMap, 500);
-            }
-        };
-    </script>
-    
-    <!-- Load Leaflet CSS and JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    
-    <!-- EmailJS -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-
-    <script>
-        // Fix image paths for GitHub Pages vs local file
-        (function() {
-            // Detect if running on GitHub Pages (web server) or local file
-            const isLocalFile = window.location.protocol === 'file:';
-            const isGitHubPages = window.location.hostname.includes('github.io') || 
-                                 window.location.hostname.includes('github.com');
-            
-            // Set image path prefix
-            const imgPath = (isLocalFile || !isGitHubPages) ? 'img/' : '/img/';
-            
-            // Update hero background images
-            const hero = document.querySelector('.hero');
-            if (hero) {
-                const darkBg = `linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('${imgPath}background.png')`;
-                const lightBg = `linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('${imgPath}backgroundlight.png')`;
-                
-                hero.style.backgroundImage = darkBg;
-                
-                // Update ::before pseudo-element via style tag
-                const styleId = 'hero-bg-style';
-                let styleElement = document.getElementById(styleId);
-                if (!styleElement) {
-                    styleElement = document.createElement('style');
-                    styleElement.id = styleId;
-                    document.head.appendChild(styleElement);
-                }
-                styleElement.textContent = `
-                    .hero::before {
-                        background-image: ${lightBg};
-                    }
-                `;
-            }
-        })();
-        
-        // Theme Toggle Functionality
-        (function() {
-            const themeToggle = document.getElementById('theme-toggle');
-            const themeIcon = document.getElementById('theme-icon');
-            
-            // Function to set theme
-            function setTheme(theme) {
-                document.documentElement.setAttribute('data-theme', theme);
-                localStorage.setItem('theme', theme);
-                
-                // Update icon
-                if (theme === 'light') {
-                    themeIcon.classList.remove('fa-moon');
-                    themeIcon.classList.add('fa-sun');
-                } else {
-                    themeIcon.classList.remove('fa-sun');
-                    themeIcon.classList.add('fa-moon');
-                }
-            }
-            
-            // Function to get initial theme
-            function getInitialTheme() {
-                // Check if user has a saved preference
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme) {
-                    return savedTheme;
-                }
-                
-                // Check system preference
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-                    return 'light';
-                }
-                
-                // Default to dark
-                return 'dark';
-            }
-            
-            // Initialize theme on page load
-            const initialTheme = getInitialTheme();
-            setTheme(initialTheme);
-            
-            // Toggle theme on button click
-            themeToggle.addEventListener('click', function() {
-                const currentTheme = document.documentElement.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                setTheme(newTheme);
-            });
-            
-            // Listen for system theme changes
-            if (window.matchMedia) {
-                window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function(e) {
-                    // Only update if user hasn't manually set a preference
-                    if (!localStorage.getItem('theme')) {
-                        setTheme(e.matches ? 'light' : 'dark');
-                    }
-                });
-            }
-        })();
-        
-        // Mobile Menu Toggle
-        const menuToggle = document.getElementById('menu-toggle');
-        const navLinks = document.getElementById('nav-links');
-        const menuIcon = document.getElementById('menu-icon');
-        
-        if (menuToggle && navLinks) {
-            menuToggle.addEventListener('click', function() {
-                navLinks.classList.toggle('active');
-                if (navLinks.classList.contains('active')) {
-                    menuIcon.classList.remove('fa-bars');
-                    menuIcon.classList.add('fa-times');
-                } else {
-                    menuIcon.classList.remove('fa-times');
-                    menuIcon.classList.add('fa-bars');
-                }
-            });
-            
-            // Close menu when clicking on a link
-            navLinks.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', function() {
-                    navLinks.classList.remove('active');
-                    menuIcon.classList.remove('fa-times');
-                    menuIcon.classList.add('fa-bars');
-                });
-            });
-            
-            // Close menu when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
-                    navLinks.classList.remove('active');
-                    menuIcon.classList.remove('fa-times');
-                    menuIcon.classList.add('fa-bars');
-                }
-            });
-        }
-        
-        // Smooth scrolling pour les liens d'ancrage
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
-        });
-
-        // PDF Modal functionality
-        const modal = document.getElementById('pdf-modal');
-        const pdfViewer = document.getElementById('pdf-viewer');
-        
-        // Function to show loading in modal
-        function showLoading(message = 'Envoi en cours...') {
-            const loadingContainer = document.getElementById('loading-container');
-            const loadingText = loadingContainer.querySelector('.loading-text');
-            loadingText.textContent = message;
-            loadingContainer.style.display = 'flex';
-            pdfViewer.style.display = 'none';
-            modal.style.display = 'block';
-        }
-        
-        // Function to hide loading and show content
-        function hideLoading() {
-            const loadingContainer = document.getElementById('loading-container');
-            loadingContainer.style.display = 'none';
-            pdfViewer.style.display = 'block';
-        }
-        
-        // Function to open modal with PDF
-        function openPDF(pdfPath) {
-            hideLoading();
-            const mailtoContent = document.getElementById('mailto-content');
-            if (mailtoContent) {
-                mailtoContent.style.display = 'none';
-            }
-            pdfViewer.style.display = 'block';
-            pdfViewer.src = pdfPath;
-            modal.style.display = 'block';
-        }
-        
-        // Function to open modal with URL
-        function openURL(url) {
-            hideLoading();
-            const mailtoContent = document.getElementById('mailto-content');
-            if (mailtoContent) {
-                mailtoContent.style.display = 'none';
-            }
-            pdfViewer.style.display = 'block';
-            pdfViewer.src = url;
-            modal.style.display = 'block';
-        }
-        
-        // Event listeners for certification buttons
-        document.querySelectorAll('.view-cert-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const pdfPath = this.getAttribute('data-pdf');
-                openPDF(pdfPath);
-            });
-        });
-        
-        // Event listeners for project buttons
-        document.querySelectorAll('.view-project-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const pdfPath = this.getAttribute('data-pdf');
-                openPDF(pdfPath);
-            });
-        });
-        
-        // Event listeners for clickable timeline items
-        document.querySelectorAll('.timeline-content.clickable').forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                const url = this.getAttribute('data-url');
-                const openNewTab = this.getAttribute('data-open-new-tab') === 'true';
-                
-                if (url) {
-                    if (openNewTab) {
-                        // Open in new tab and switch to it
-                        const newTab = window.open(url, '_blank');
-                        if (newTab) {
-                            newTab.focus();
-                        }
-                    } else {
-                        openURL(url);
-                    }
-                }
-            });
-        });
-        
-        // Close modal when clicking outside
-        window.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-                pdfViewer.src = '';
-                pdfViewer.style.display = 'block';
-                const mailtoContent = document.getElementById('mailto-content');
-                if (mailtoContent) {
-                    mailtoContent.style.display = 'none';
-                }
-                hideLoading();
-            }
-        });
-        
-        // Scroll animation
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, observerOptions);
-        
-        // Observe all sections (excluding timeline items which have their own animation)
-        document.querySelectorAll('section').forEach(section => {
-            observer.observe(section);
-        });
-        
-        // Mobile Glow Animation on Scroll
-        (function() {
-            // Detect if device is mobile/touch device
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                            (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) ||
-                            ('ontouchstart' in window);
-            
-            if (isMobile) {
-                // Create observer for glow effects
-                const glowObserverOptions = {
-                    threshold: 0.3,
-                    rootMargin: '0px 0px -100px 0px'
-                };
-                
-                const glowObserver = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            entry.target.classList.add('mobile-glow');
-                        } else {
-                            // Remove glow when element leaves viewport
-                            entry.target.classList.remove('mobile-glow');
-                        }
-                    });
-                }, glowObserverOptions);
-                
-                // Observe elements with glow effects
-                // Timeline clickable items
-                document.querySelectorAll('.timeline-content.clickable').forEach(element => {
-                    glowObserver.observe(element);
-                });
-                
-                // Cert cards
-                document.querySelectorAll('.cert-card').forEach(element => {
-                    glowObserver.observe(element);
-                });
-                
-                // Project cards
-                document.querySelectorAll('.project-card').forEach(element => {
-                    glowObserver.observe(element);
-                });
-                
-                // Skill cards with view-cert-btn (Tableau de compétences)
-                document.querySelectorAll('.skill-card').forEach(card => {
-                    if (card.querySelector('.view-cert-btn')) {
-                        glowObserver.observe(card);
-                    }
-                });
-                
-                // Icon links
-                document.querySelectorAll('.icon-link').forEach(element => {
-                    glowObserver.observe(element);
-                });
-            }
-        })();
-        
-        // Timeline Progressive Animation
-        function animateTimeline() {
-            const timeline = document.querySelector('.timeline');
-            if (!timeline) return;
-            
-            const timelineSection = document.getElementById('experiences');
-            if (!timelineSection) return;
-            
-            const timelineItems = document.querySelectorAll('.timeline-item');
-            
-            // Track if animation has completed
-            let animationCompleted = false;
-            let maxProgress = 0;
-            
-            function updateTimeline() {
-                // If animation already completed, keep everything visible
-                if (animationCompleted) {
-                    const timelineHeight = timeline.offsetHeight;
-                    const styleId = 'timeline-line-style';
-                    let styleElement = document.getElementById(styleId);
-                    if (!styleElement) {
-                        styleElement = document.createElement('style');
-                        styleElement.id = styleId;
-                        document.head.appendChild(styleElement);
-                    }
-                    styleElement.textContent = `
-                        .timeline::after {
-                            height: ${timelineHeight}px !important;
-                        }
-                    `;
-                    
-                    // Keep all items visible
-                    timelineItems.forEach((item) => {
-                        item.classList.add('visible');
-                        item.classList.add('branch-visible');
-                    });
-                    return;
-                }
-                
-                const rect = timelineSection.getBoundingClientRect();
-                const windowHeight = window.innerHeight;
-                
-                // Calculate when timeline section enters viewport
-                const sectionTop = rect.top;
-                const sectionBottom = rect.bottom;
-                const sectionHeight = rect.height;
-                
-                // Only animate when section is in viewport
-                if (sectionBottom < 0 || sectionTop > windowHeight) {
-                    return;
-                }
-                
-                // Calculate scroll progress within the timeline section
-                // Start animation when section enters viewport, complete when section bottom exits
-                const viewportCenter = windowHeight * 0.5;
-                const sectionTopAbsolute = timelineSection.offsetTop;
-                const currentScroll = window.scrollY;
-                
-                // Calculate progress: 0 when section top reaches viewport center, 1 when section bottom reaches viewport center
-                const animationStart = sectionTopAbsolute - viewportCenter;
-                const animationEnd = sectionTopAbsolute + sectionHeight - viewportCenter;
-                const scrollPosition = currentScroll;
-                
-                // Calculate progress (0 to 1)
-                const progress = Math.max(0, Math.min(1, 
-                    (scrollPosition - animationStart) / (animationEnd - animationStart)
-                ));
-                
-                // Track maximum progress reached (only increases, never decreases)
-                maxProgress = Math.max(maxProgress, progress);
-                
-                // Mark as completed if progress reaches near 1 (allowing for small rounding)
-                if (maxProgress >= 0.99) {
-                    animationCompleted = true;
-                }
-                
-                // Calculate line height based on maxProgress (not current progress)
-                // This ensures animation only progresses when scrolling down
-                const timelineHeight = timeline.offsetHeight;
-                const lineHeight = maxProgress * timelineHeight;
-                
-                // Update the ::after pseudo-element height using a style tag
-                const styleId = 'timeline-line-style';
-                let styleElement = document.getElementById(styleId);
-                if (!styleElement) {
-                    styleElement = document.createElement('style');
-                    styleElement.id = styleId;
-                    document.head.appendChild(styleElement);
-                }
-                styleElement.textContent = `
-                    .timeline::after {
-                        height: ${lineHeight}px !important;
-                    }
-                `;
-                
-                // Animate timeline items as line reaches them
-                // Use maxProgress to ensure items stay visible once revealed (one-way animation)
-                timelineItems.forEach((item) => {
-                    // Get item position relative to timeline
-                    const itemTop = item.offsetTop;
-                    const itemHeight = item.offsetHeight;
-                    const itemCenter = itemTop + itemHeight / 2;
-                    
-                    // Show branch line slightly before the item appears (60px before center)
-                    if (lineHeight >= itemCenter - 60) {
-                        item.classList.add('branch-visible');
-                    }
-                    
-                    // Show item when line reaches its position (with small offset for smooth appearance)
-                    // Once visible, it stays visible because maxProgress never decreases
-                    if (lineHeight >= itemCenter - 30) {
-                        item.classList.add('visible');
-                    }
-                });
-            }
-            
-            // Throttle scroll events for better performance
-            let ticking = false;
-            function onScroll() {
-                if (!ticking) {
-                    window.requestAnimationFrame(() => {
-                        updateTimeline();
-                        ticking = false;
-                    });
-                    ticking = true;
-                }
-            }
-            
-            // Initial check
-            setTimeout(updateTimeline, 100);
-            
-            // Listen to scroll events
-            window.addEventListener('scroll', onScroll, { passive: true });
-            window.addEventListener('resize', updateTimeline);
-        }
-        
-        // Initialize timeline animation when page loads
-        window.addEventListener('load', animateTimeline);
-        
-        // Also initialize if DOM is already loaded
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            setTimeout(animateTimeline, 100);
-        }
-        
-        // Contact Form Email Functionality
-        (function() {
-            // Initialize EmailJS
-            // Replace these with your EmailJS credentials
-            // Get them from https://www.emailjs.com/
-            const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID';
-            const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
-            const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
-            
-            // Initialize EmailJS
-            if (typeof emailjs !== 'undefined') {
-                emailjs.init(EMAILJS_PUBLIC_KEY);
-            }
-            
-            const contactForm = document.getElementById('contact-form');
-            const formMessage = document.getElementById('form-message');
-            const submitBtn = document.getElementById('submit-btn');
-            
-            if (contactForm) {
-                contactForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    
-                    // Show loading state
-                    submitBtn.disabled = true;
-                    submitBtn.textContent = 'Envoi en cours...';
-                    formMessage.style.display = 'none';
-                    
-                    // Show loading in modal
-                    showLoading('Envoi en cours...');
-                    
-                    // Get form data
-                    const formData = {
-                        from_name: document.getElementById('name').value,
-                        from_email: document.getElementById('email').value,
-                        subject: document.getElementById('subject').value,
-                        message: document.getElementById('message').value,
-                        to_email: 'srafferty.ledantec@gmail.com'
-                    };
-                    
-                    try {
-                        // Check if EmailJS is configured
-                        if (EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY' || 
-                            EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID' || 
-                            EMAILJS_TEMPLATE_ID === 'YOUR_TEMPLATE_ID') {
-                            // Fallback to mailto if EmailJS not configured
-                            // Show mailto link in modal instead of opening email client
-                            const emailBody = `Nom: ${formData.from_name}\nEmail: ${formData.from_email}\n\nMessage:\n${formData.message}`;
-                            const mailtoLink = `mailto:srafferty.ledantec@gmail.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(emailBody)}`;
-                            
-                            // Create a clickable link in the modal
-                            setTimeout(() => {
-                                hideLoading();
-                                const mailtoHTML = `
-                                    <div style="padding: 40px; text-align: center;">
-                                        <h3 style="color: var(--accent); margin-bottom: 20px;">Email prêt à être envoyé</h3>
-                                        <p style="margin-bottom: 30px; color: var(--text);">Cliquez sur le lien ci-dessous pour ouvrir votre client email avec le message pré-rempli :</p>
-                                        <a href="${mailtoLink}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: var(--primary); color: white; padding: 15px 30px; border-radius: 5px; text-decoration: none; font-weight: 600; transition: all 0.3s;">
-                                            <i class="fas fa-envelope" style="margin-right: 10px;"></i>Ouvrir le client email
-                                        </a>
-                                        <p style="margin-top: 20px; color: var(--text-muted); font-size: 14px;">Ou copiez cette adresse : srafferty.ledantec@gmail.com</p>
-                                    </div>
-                                `;
-                                pdfViewer.style.display = 'none';
-                                const modalContent = document.querySelector('.modal-content');
-                                let mailtoDiv = document.getElementById('mailto-content');
-                                if (!mailtoDiv) {
-                                    mailtoDiv = document.createElement('div');
-                                    mailtoDiv.id = 'mailto-content';
-                                    modalContent.appendChild(mailtoDiv);
-                                }
-                                mailtoDiv.innerHTML = mailtoHTML;
-                                mailtoDiv.style.display = 'block';
-                            }, 1000);
-                            
-                            contactForm.reset();
-                        } else {
-                            // Send email using EmailJS
-                            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, formData);
-                            
-                            // Success message in modal
-                            hideLoading();
-                            const successHTML = `
-                                <div style="padding: 40px; text-align: center;">
-                                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: rgba(76, 175, 80, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                        <i class="fas fa-check-circle" style="font-size: 40px; color: #4caf50;"></i>
-                                    </div>
-                                    <h3 style="color: #4caf50; margin-bottom: 15px;">Message envoyé avec succès!</h3>
-                                    <p style="color: var(--text);">Je vous répondrai bientôt.</p>
-                                </div>
-                            `;
-                            pdfViewer.style.display = 'none';
-                            const modalContent = document.querySelector('.modal-content');
-                            let successDiv = document.getElementById('mailto-content');
-                            if (!successDiv) {
-                                successDiv = document.createElement('div');
-                                successDiv.id = 'mailto-content';
-                                modalContent.appendChild(successDiv);
-                            }
-                            successDiv.innerHTML = successHTML;
-                            successDiv.style.display = 'block';
-                            
-                            contactForm.reset();
-                        }
-                    } catch (error) {
-                        console.error('Error sending email:', error);
-                        
-                        // Error message in modal
-                        hideLoading();
-                        const errorHTML = `
-                            <div style="padding: 40px; text-align: center;">
-                                <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: rgba(244, 67, 54, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-exclamation-circle" style="font-size: 40px; color: #f44336;"></i>
-                                </div>
-                                <h3 style="color: #f44336; margin-bottom: 15px;">Erreur lors de l'envoi</h3>
-                                <p style="color: var(--text); margin-bottom: 20px;">Veuillez réessayer ou m'envoyer un email directement à :</p>
-                                <a href="mailto:srafferty.ledantec@gmail.com" style="color: var(--primary); text-decoration: underline;">srafferty.ledantec@gmail.com</a>
-                            </div>
-                        `;
-                        pdfViewer.style.display = 'none';
-                        const modalContent = document.querySelector('.modal-content');
-                        let errorDiv = document.getElementById('mailto-content');
-                        if (!errorDiv) {
-                            errorDiv = document.createElement('div');
-                            errorDiv.id = 'mailto-content';
-                            modalContent.appendChild(errorDiv);
-                        }
-                        errorDiv.innerHTML = errorHTML;
-                        errorDiv.style.display = 'block';
-                    } finally {
-                        // Reset button state
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = 'Envoyer';
-                    }
-                });
-            }
-        })();
-    </script>
+</section>
+<section id="apropos" class="about">
+    <div class="container">
+        <h2>Présentation</h2>
+        <div class="about-content">
+            <div class="about-text">
+                <div class="about-summary">
+                    <p>Je suis étudiant en deuxième année de BTS Services Informatiques aux Organisations, option SISR, au lycée Félix Le Dantec à Lannion. À travers ce portfolio, je présente mon parcours de formation, mes stages, mes projets et les différents éléments qui appuient ma préparation à l’épreuve orale E4.</p>
+                    <p>Mon objectif est de valoriser des réalisations concrètes en administration système, infrastructure réseau et cybersécurité, en montrant pour chacune le besoin traité, le service rendu, les outils utilisés et les compétences du tableau mobilisées. Le site sert donc à la fois de support de présentation pour l’oral et de synthèse de mon parcours de professionnalisation.</p>
+                </div>
+                <div class="icon-links">
+                    <a href="pdf/CV_Scott_Rafferty.pdf" class="icon-link" title="Télécharger mon CV"><i class="fas fa-file-pdf" style="color:#8a2be2;"></i></a>
+                    <a href="https://github.com/srafferty13/docs" target="_blank" rel="noopener noreferrer" class="icon-link" title="Mon GitHub"><i class="fab fa-github" style="color:#8a2be2;"></i></a>
+                    <a href="https://scottrfy.alwaysdata.net/freshrss/i/?a=global" target="_blank" rel="noopener noreferrer" class="icon-link" title="FreshRSS – veille technologique"><i class="fas fa-rss" style="color:#8a2be2;"></i></a>
+                </div>
+            </div>
+            <div class="about-image"><img src="img/Moi.png" alt="Scott Rafferty"></div>
+        </div>
+    </div>
+</section>
+<section id="environnements"><div class="container"><h2>Outils et environnements</h2><div class="tools-grid"><div class="tool-card"><h3>Infrastructure et virtualisation</h3><p>VirtualBox, Proxmox, machines virtuelles, conteneurs, environnements de test.</p></div><div class="tool-card"><h3>Services réseau</h3><p>SSH, HTTPS, FTP, XRDP, DNS, DHCP, NTP, WSUS, services Web.</p></div><div class="tool-card"><h3>Systèmes</h3><p>Linux Debian, Ubuntu, Windows 10/11, environnement Cisco OS.</p></div><div class="tool-card"><h3>Équipements</h3><p>Switch, routeur, pare-feu, point d’accès Wi-Fi, client léger Axel 320.</p></div><div class="tool-card"><h3>Développement</h3><p>C#, HTML, CSS, JavaScript, PHP.</p></div><div class="tool-card"><h3>Analyse et sécurité</h3><p>Kali Linux, Nmap, Wireshark, OWASP, OpenVAS.</p></div><div class="tool-card organization-card"><h3>Organisation</h3><p>GitHub, Trello, documentation technique, suivi des tâches.</p></div></div></div></section>
+<section id="parcours"><div class="container"><h2>Parcours</h2><div class="timeline"><div class="timeline-item"><div class="timeline-content clickable" data-url="https://www.idea-optical.com/"><div class="timeline-date">2020 - 2021</div><h3>Stage - Idéa Optical Lannion</h3><p>1 semaine (stage de 3ème)</p></div></div><div class="timeline-item"><div class="timeline-content clickable" data-url="https://lycee-ledantec.fr/formation/bac-industriel-sti2d/sti2d/"><div class="timeline-date">2022 - 2024</div><h3>Baccalauréat STI2D</h3><p>Lycée Félix Le Dantec, Lannion</p></div></div><div class="timeline-item"><div class="timeline-content clickable" data-url="https://www.recrutement.leclerc/nos-metiers/au-plus-proche-de-nos-clients/hote-de-caisse/" data-open-new-tab="true"><div class="timeline-date">2023 - 2025</div><h3>Caissier - Leclerc Lannion</h3><p>6 mois (vacances scolaires)</p><p>Développement du relationnel et de la communication</p></div></div><div class="timeline-item"><div class="timeline-content clickable" data-url="https://lycee-ledantec.fr/formation/bts-sio-cybersecurite-lannion-formation-applications-informatique-avenir-reseaux-maintenance/"><div class="timeline-date">2024 - 2025</div><h3>BTS SIO option SISR 1ère année</h3><p>Lycée Félix Le Dantec, Lannion</p></div></div><div class="timeline-item"><div class="timeline-content clickable" data-url="https://www.microtel-guingamp.fr/"><div class="timeline-date">2025</div><h3>Stage - Microtel Club Guingamp</h3><p>1 mois (stage de BTS SIO 1ère année)</p><p>Accompagnement d'utilisateurs, prévention sur le phishing avec création d'un faux site de démonstration</p></div></div><div class="timeline-item"><div class="timeline-content clickable" data-url="https://lycee-ledantec.fr/formation/bts-sio-cybersecurite-lannion-formation-applications-informatique-avenir-reseaux-maintenance/"><div class="timeline-date">2025 - 2026</div><h3>BTS SIO option SISR 2ème année</h3><p>Poursuite de la spécialisation en administration système, réseau, services et cybersécurité.</p></div></div><div class="timeline-item"><div class="timeline-content clickable" data-url="https://www.isitix.com/fr/"><div class="timeline-date">2026</div><h3>Stage - ISITIX</h3><p>7 semaines (stage de BTS SIO 2ème année)</p><p>Pentest externe et interne, scripts d'automatisation, rapports de vulnérabilités et remédiation.</p></div></div></div></div></section>
+<section id="stages"><div class="container"><h2>Stages</h2><div class="projects-grid"><div class="project-card no-project-icon"><div class="project-content"><h3>Stage BTS 1ère année - Microtel Club Guingamp</h3><div class="compact-list"><div class="compact-item"><strong>Entreprise :</strong> Microtel Club Guingamp, association d'accompagnement des adhérents.</div><div class="compact-item"><strong>Travail demandé :</strong> accompagner les adhérents et préparer une activité de sensibilisation au phishing via une simulation.</div><div class="compact-item"><strong>Outils utilisés :</strong> HTML, CSS, JavaScript, navigateur Web, supports de sensibilisation.</div></div><div class="badge-row"><span class="badge comp-ri">Répondre aux incidents et aux demandes d’assistance et d’évolution</span><span class="badge comp-msi">Mettre à disposition des utilisateurs un service informatique</span><span class="badge comp-tmp">Travailler en mode projet</span><span class="badge comp-odp">Organiser son développement professionnel</span></div><a href="#" class="mini-btn view-project-btn" data-pdf="vid/VideoExempleAttaquePhishing.mp4">Voir le projet</a></div></div><div class="project-card no-project-icon"><div class="project-content"><h3>Stage BTS 2ème année - ISITIX</h3><div class="compact-list"><div class="compact-item"><strong>Entreprise :</strong> ISITIX, entreprise orientée cybersécurité et audit d'infrastructure.</div><div class="compact-item"><strong>Travail demandé :</strong> analyser l'infrastructure, réaliser des pentests, documenter les vulnérabilités et proposer des actions de remédiation.</div><div class="compact-item"><strong>Outils utilisés :</strong> Kali Linux, Python (scan_tld.py, reposearch, nmap_auto.py), WireGuard, Nmap, Gitleaks, TruffleHog.</div></div><div class="badge-row"><span class="badge comp-gpi">Gérer le patrimoine informatique</span><span class="badge comp-ri">Répondre aux incidents et aux demandes d’assistance et d’évolution</span><span class="badge comp-msi">Mettre à disposition des utilisateurs un service informatique</span><span class="badge comp-tmp">Travailler en mode projet</span><span class="badge comp-odp">Organiser son développement professionnel</span></div><a href="#" class="mini-btn view-project-btn" data-pdf="pdf/ResumeStage.pdf">Voir le projet</a></div></div></div></div></section>
+<section id="projets"><div class="container"><h2>Projets</h2><div class="projects-grid"><div class="project-card no-project-icon"><div class="project-content"><h3>Atelier de professionalisation 1ère Année : EGNARO</h3><div class="compact-list"><div class="compact-item"><strong>Contexte :</strong> construction d’un environnement de services de base.</div><div class="compact-item"><strong>Service rendu :</strong> accès Web, résolution de noms, accès distant.</div><div class="compact-item"><strong>Outils :</strong> Linux, Apache2, DNS, RDP, virtualisation.</div></div><div class="badge-row"><span class="badge comp-gpi">Gérer le patrimoine informatique</span><span class="badge comp-dpl">Développer la présence en ligne de l’organisation</span><span class="badge comp-tmp">Travailler en mode projet</span><span class="badge comp-msi">Mettre à disposition des utilisateurs un service informatique</span><span class="badge comp-odp">Organiser son développement professionnel</span></div><a href="#" class="mini-btn view-project-btn" data-pdf="img/Projet_1ereAnnee.png">Voir le projet</a></div></div><div class="project-card no-project-icon"><div class="project-content"><h3>Atelier de professionalisation 2ème Année : GSB</h3><div class="compact-list"><div class="compact-item"><strong>Contexte :</strong> structurer et isoler différents segments du réseau.</div><div class="compact-item"><strong>Service rendu :</strong> séparation logique, circulation maîtrisée des flux, architecture plus lisible.</div><div class="compact-item"><strong>Outils :</strong> VLAN, routeurs, pare-feu, équipements réseau.</div></div><div class="badge-row"><span class="badge comp-gpi">Gérer le patrimoine informatique</span><span class="badge comp-ri">Répondre aux incidents et aux demandes d’assistance et d’évolution</span><span class="badge comp-tmp">Travailler en mode projet</span><span class="badge comp-msi">Mettre à disposition des utilisateurs un service informatique</span><span class="badge comp-odp">Organiser son développement professionnel</span></div><a href="#" class="mini-btn view-project-btn" data-pdf="img/Projet_2emeAnnee.png">Voir le projet</a></div></div></div></div></section>
+<section id="certifications"><div class="container"><h2>Certifications</h2><div class="certifications-grid"><div class="cert-card"><h3>SecNum</h3><p>Plateforme de formation de l’ANSSI dédiée à la cybersécurité.</p><div class="compact-list"><div class="compact-item"><strong>Apport :</strong> culture cybersécurité, bonnes pratiques, sensibilisation.</div></div><div class="badge-row"><span class="badge comp-gpi">Gérer le patrimoine informatique</span><span class="badge comp-odp">Organiser son développement professionnel</span></div><a href="#" class="mini-btn view-cert-btn" data-pdf="pdf/SecNum.pdf">Voir la certification</a></div><div class="cert-card"><h3>RGPD</h3><p>Formation sur le Règlement Général sur la Protection des Données.</p><div class="compact-list"><div class="compact-item"><strong>Apport :</strong> prise en compte du cadre réglementaire et des bonnes pratiques liées aux données.</div></div><div class="badge-row"><span class="badge comp-gpi">Gérer le patrimoine informatique</span><span class="badge comp-odp">Organiser son développement professionnel</span></div><a href="#" class="mini-btn view-cert-btn" data-pdf="pdf/RGPD.pdf">Voir la certification</a></div><div class="cert-card"><h3>PIX</h3><p>Plateforme nationale d’évaluation des usages numériques.</p><div class="compact-list"><div class="compact-item"><strong>Apport :</strong> progression et validation dans les usages numériques.</div></div><div class="badge-row"><span class="badge comp-odp">Organiser son développement professionnel</span></div><a href="#" class="mini-btn view-cert-btn" data-pdf="pdf/PIX.pdf">Voir la certification</a></div></div></div></section>
+<section id="veille"><div class="container"><h2>Veille technologique</h2><div class="watch-grid"><div class="watch-card"><h3>Organisation</h3><p>Instance <strong>FreshRSS</strong> auto-hébergée sur AlwaysData : abonnements RSS centralisés et classement par catégories (General Tech News, Security Feeds, Systems &amp; Networks).</p></div><div class="watch-card"><h3>Thèmes suivis</h3><p>Actualité tech générale, cybersécurité et alertes (ANSSI, CERT), systèmes, réseaux et Linux.</p></div><div class="watch-card"><h3>Sources</h3><p>Ars Technica, Clubic, Numerama Tech, ANSSI Actualité, CERT-FR, ZDNet FR, Le Monde Informatique, LinuxFr.org, ZDNet Linux.</p></div></div><div class="veille-actions"><a href="https://scottrfy.alwaysdata.net/freshrss/i/?a=global" target="_blank" rel="noopener noreferrer" class="btn">Ouvrir FreshRSS</a></div></div></section>
+<section id="realisations-personnelles"><div class="container"><h2>Réalisations personnelles</h2><div class="projects-grid"><div class="project-card no-project-icon"><div class="project-content"><h3>Guide Angry IP Scanner</h3><p>Guide personnel basé sur un tutoriel : utilisation d’Angry IP Scanner pour repérer des hôtes, filtrer les résultats et analyser des ports sur un réseau local ou des plages publiques.</p><div class="badge-row"><span class="badge comp-gpi">Gérer le patrimoine informatique</span><span class="badge comp-odp">Organiser son développement professionnel</span></div><a href="https://github.com/srafferty13/docsperso/blob/main/AngryIPScannerGuide.md" target="_blank" rel="noopener noreferrer" class="mini-btn">Voir sur GitHub</a></div></div><div class="project-card no-project-icon"><div class="project-content"><h3>Robin — OSINT dark web</h3><p>Synthèse personnelle sur l’outil Robin (recherche légale sur le dark web, prérequis Docker/Tor, installation, précautions). Référence : dépôt et guides publics cités dans la note.</p><div class="badge-row"><span class="badge comp-tmp">Travailler en mode projet</span><span class="badge comp-odp">Organiser son développement professionnel</span></div><a href="https://github.com/srafferty13/docsperso/blob/main/RobinAIDarkWebOSINT.md" target="_blank" rel="noopener noreferrer" class="mini-btn">Voir sur GitHub</a></div></div><div class="project-card no-project-icon"><div class="project-content"><h3>Synthèse « Ethical Hacker gadgets »</h3><p>Notes tirées de la vidéo <em>Ethical Hacker gadgets</em> (Ryan Montgomery / Shawn Ryan Show) : Flipper Zero, Dual ESP (Awok Dynamics), BLE Shark Nano, Glacier Secure Internet Device, firmware Ray Hunter — description des usages annoncés et liens officiels.</p><div class="badge-row"><span class="badge comp-odp">Organiser son développement professionnel</span></div><a href="https://github.com/srafferty13/docsperso/blob/main/TechTools.md" target="_blank" rel="noopener noreferrer" class="mini-btn">Voir sur GitHub</a></div></div></div></div></section>
+<section id="synthese"><div class="container"><h2>Tableau de synthèse</h2><div class="table-wrap" style="margin-bottom: 25px;"><table><thead><tr><th>Élément</th><th>Type</th><th>Compétences du tableau associées</th><th>Document</th></tr></thead><tbody>
+<tr><td>Atelier de professionalisation 1ère Année : EGNARO</td><td>Projet</td><td><div class="table-badges"><span class="badge comp-gpi">Gérer le patrimoine informatique</span><span class="badge comp-dpl">Développer la présence en ligne de l’organisation</span><span class="badge comp-tmp">Travailler en mode projet</span><span class="badge comp-msi">Mettre à disposition des utilisateurs un service informatique</span><span class="badge comp-odp">Organiser son développement professionnel</span></div></td><td><p style="margin-bottom:10px; color: var(--text-muted);">Schéma et vue d’ensemble du projet EGNARO.</p><a href="#" class="mini-btn view-project-btn" data-pdf="img/Projet_1ereAnnee.png">Ouvrir</a></td></tr>
+<tr><td>Atelier de professionalisation 2ème Année : GSB</td><td>Projet</td><td><div class="table-badges"><span class="badge comp-gpi">Gérer le patrimoine informatique</span><span class="badge comp-ri">Répondre aux incidents et aux demandes d’assistance et d’évolution</span><span class="badge comp-tmp">Travailler en mode projet</span><span class="badge comp-msi">Mettre à disposition des utilisateurs un service informatique</span><span class="badge comp-odp">Organiser son développement professionnel</span></div></td><td><p style="margin-bottom:10px; color: var(--text-muted);">Schéma de l’infrastructure et support du projet GSB.</p><a href="#" class="mini-btn view-project-btn" data-pdf="img/Projet_2emeAnnee.png">Ouvrir</a></td></tr>
+<tr><td>Stage Microtel : Faux site de démonstration phishing</td><td>Projet / stage</td><td><div class="table-badges"><span class="badge comp-ri">Répondre aux incidents et aux demandes d’assistance et d’évolution</span><span class="badge comp-msi">Mettre à disposition des utilisateurs un service informatique</span><span class="badge comp-tmp">Travailler en mode projet</span><span class="badge comp-odp">Organiser son développement professionnel</span></div></td><td><p style="margin-bottom:10px; color: var(--text-muted);">Vidéo de démonstration du faux site de phishing.</p><a href="#" class="mini-btn view-project-btn" data-pdf="vid/VideoExempleAttaquePhishing.mp4">Ouvrir</a></td></tr>
+<tr><td>Stage ISITIX : Pentest et remédiation</td><td>Projet / stage</td><td><div class="table-badges"><span class="badge comp-gpi">Gérer le patrimoine informatique</span><span class="badge comp-ri">Répondre aux incidents et aux demandes d’assistance et d’évolution</span><span class="badge comp-msi">Mettre à disposition des utilisateurs un service informatique</span><span class="badge comp-tmp">Travailler en mode projet</span><span class="badge comp-odp">Organiser son développement professionnel</span></div></td><td><p style="margin-bottom:10px; color: var(--text-muted);">Synthèse du stage ISITIX (pentest, scripts, remédiation, rapports).</p><a href="#" class="mini-btn view-project-btn" data-pdf="pdf/ResumeStage.pdf">Ouvrir</a></td></tr>
+<tr><td>SecNum</td><td>Certification</td><td><div class="table-badges"><span class="badge comp-gpi">Gérer le patrimoine informatique</span><span class="badge comp-odp">Organiser son développement professionnel</span></div></td><td><p style="margin-bottom:10px; color: var(--text-muted);">Attestation de réussite de la certification SecNum.</p><a href="#" class="mini-btn view-cert-btn" data-pdf="pdf/SecNum.pdf">Ouvrir</a></td></tr>
+<tr><td>RGPD</td><td>Certification</td><td><div class="table-badges"><span class="badge comp-gpi">Gérer le patrimoine informatique</span><span class="badge comp-odp">Organiser son développement professionnel</span></div></td><td><p style="margin-bottom:10px; color: var(--text-muted);">Attestation liée à la sensibilisation au RGPD.</p><a href="#" class="mini-btn view-cert-btn" data-pdf="pdf/RGPD.pdf">Ouvrir</a></td></tr>
+<tr><td>PIX</td><td>Certification</td><td><div class="table-badges"><span class="badge comp-odp">Organiser son développement professionnel</span></div></td><td><p style="margin-bottom:10px; color: var(--text-muted);">Résultat ou attestation de la certification PIX.</p><a href="#" class="mini-btn view-cert-btn" data-pdf="pdf/PIX.pdf">Ouvrir</a></td></tr>
+<tr><td>Veille technologique</td><td>Démarche</td><td><div class="table-badges"><span class="badge comp-odp">Organiser son développement professionnel</span></div></td><td><p style="margin-bottom:10px; color: var(--text-muted);">Veille via FreshRSS (flux classés par catégories).</p><a href="#veille" class="mini-btn">Voir la section</a><a href="https://scottrfy.alwaysdata.net/freshrss/i/?a=global" target="_blank" rel="noopener noreferrer" class="mini-btn" style="margin-left:8px;">FreshRSS</a></td></tr>
+<tr><td>Réalisations personnelles</td><td>Documentation</td><td><div class="table-badges"><span class="badge comp-gpi">Gérer le patrimoine informatique</span><span class="badge comp-tmp">Travailler en mode projet</span><span class="badge comp-odp">Organiser son développement professionnel</span></div></td><td><p style="margin-bottom:10px; color: var(--text-muted);">Angry IP Scanner, Robin OSINT, synthèse « Ethical Hacker gadgets »</p><a href="#realisations-personnelles" class="mini-btn">Voir la section</a><a href="https://github.com/srafferty13/docsperso" target="_blank" rel="noopener noreferrer" class="mini-btn" style="margin-left:8px;">docsperso</a></td></tr>
+</tbody></table></div><div class="synthesis-card"><h3>Tableau officiel</h3><p>Le tableau de compétences officiel reste le document de référence de synthèse pour l’oral.</p><a href="#" class="mini-btn view-cert-btn" data-pdf="pdf/Tableau_de_competence.pdf">Ouvrir le tableau</a></div></div></section>
+<section id="contact" class="contact"><div class="container"><h2>Contactez-moi</h2><div class="contact-form-container"><div class="contact-info"><h3 style="color: var(--accent); margin-bottom: 20px;">Informations de contact</h3><p><i class="fas fa-phone" style="color:#8a2be2; margin-right:10px;"></i><strong>Téléphone:</strong> 06 95 65 64 28</p><p><i class="fas fa-envelope" style="color:#8a2be2; margin-right:10px;"></i><strong>Email:</strong> srafferty.ledantec@gmail.com</p><p><i class="fas fa-map-marker-alt" style="color:#8a2be2; margin-right:10px;"></i><strong>Adresse:</strong> 5 rue Courbe, 22300 Lannion</p></div><div class="contact-form"><form id="contact-form"><div id="form-message" style="display:none; padding:15px; margin-bottom:20px; border-radius:5px; text-align:center;"></div><div class="form-group"><label for="name">Nom</label><input type="text" id="name" name="name" required></div><div class="form-group"><label for="email">Email</label><input type="email" id="email" name="email" required></div><div class="form-group"><label for="subject">Sujet</label><input type="text" id="subject" name="subject" required></div><div class="form-group"><label for="message">Message</label><textarea id="message" name="message" rows="5" required></textarea></div><button type="submit" class="btn" id="submit-btn">Envoyer</button></form></div><div class="map-container"><div id="map"></div></div></div></div></section>
+<footer><div class="container"><p>&copy; 2025 Scott Rafferty. Tous droits réservés.</p></div></footer>
+<div id="pdf-modal" class="modal"><div class="modal-content"><span class="close">&times;</span><div id="loading-container" class="loading-container" style="display:none;"><div class="spinner"></div><div class="loading-text">Envoi en cours...</div></div><iframe id="pdf-viewer" src=""></iframe></div></div>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+(function(){ const themeToggle=document.getElementById('theme-toggle'); const themeIcon=document.getElementById('theme-icon'); function setTheme(theme){ document.documentElement.setAttribute('data-theme', theme); try{localStorage.setItem('theme', theme);}catch(e){} if(theme==='light'){themeIcon.classList.remove('fa-moon');themeIcon.classList.add('fa-sun');}else{themeIcon.classList.remove('fa-sun');themeIcon.classList.add('fa-moon');}} function getInitialTheme(){ try{const saved=localStorage.getItem('theme'); if(saved) return saved;}catch(e){} if(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) return 'light'; return 'dark'; } setTheme(getInitialTheme()); themeToggle.addEventListener('click',()=>{const current=document.documentElement.getAttribute('data-theme'); setTheme(current==='light'?'dark':'light');}); })();
+const menuToggle=document.getElementById('menu-toggle'); const navLinks=document.getElementById('nav-links'); const menuIcon=document.getElementById('menu-icon'); if(menuToggle&&navLinks){ menuToggle.addEventListener('click',()=>{navLinks.classList.toggle('active'); menuIcon.classList.toggle('fa-bars'); menuIcon.classList.toggle('fa-times');}); navLinks.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{navLinks.classList.remove('active'); menuIcon.classList.add('fa-bars'); menuIcon.classList.remove('fa-times');})); }
+document.querySelectorAll('a[href^="#"]').forEach(anchor=>{ anchor.addEventListener('click',function(e){ const target=document.querySelector(this.getAttribute('href')); if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth'}); } }); });
+const modal=document.getElementById('pdf-modal'); const pdfViewer=document.getElementById('pdf-viewer'); const closeModal=document.querySelector('.close');
+function showLoading(message='Envoi en cours...'){ const loadingContainer=document.getElementById('loading-container'); loadingContainer.querySelector('.loading-text').textContent=message; loadingContainer.style.display='flex'; pdfViewer.style.display='none'; modal.style.display='block'; }
+function hideLoading(){ document.getElementById('loading-container').style.display='none'; pdfViewer.style.display='block'; }
+function openPDF(path){ hideLoading(); const mailto=document.getElementById('mailto-content'); if(mailto) mailto.style.display='none'; pdfViewer.style.display='block'; pdfViewer.src=path; modal.style.display='block'; }
+function openURL(url){ hideLoading(); const mailto=document.getElementById('mailto-content'); if(mailto) mailto.style.display='none'; pdfViewer.style.display='block'; pdfViewer.src=url; modal.style.display='block'; }
+document.querySelectorAll('.view-cert-btn, .view-project-btn').forEach(btn=>btn.addEventListener('click',function(e){ e.preventDefault(); openPDF(this.getAttribute('data-pdf')); }));
+document.querySelectorAll('.timeline-content.clickable').forEach(item=>{ item.addEventListener('click',function(e){ e.preventDefault(); const url=this.getAttribute('data-url'); const openNewTab=this.getAttribute('data-open-new-tab')==='true'; if(url){ if(openNewTab){ const w=window.open(url,'_blank'); if(w) w.focus(); } else { openURL(url); } } }); });
+closeModal.addEventListener('click',()=>{ modal.style.display='none'; pdfViewer.src=''; const mailto=document.getElementById('mailto-content'); if(mailto) mailto.style.display='none'; hideLoading(); });
+window.addEventListener('click',e=>{ if(e.target===modal){ modal.style.display='none'; pdfViewer.src=''; const mailto=document.getElementById('mailto-content'); if(mailto) mailto.style.display='none'; hideLoading(); } });
+const observer=new IntersectionObserver(entries=>{ entries.forEach(entry=>{ if(entry.isIntersecting) entry.target.classList.add('visible'); }); }, {threshold:0.1, rootMargin:'0px 0px -50px 0px'}); document.querySelectorAll('section').forEach(section=>observer.observe(section));
+function animateTimeline(){ const timeline=document.querySelector('.timeline'); const timelineSection=document.getElementById('parcours'); if(!timeline||!timelineSection) return; const timelineItems=document.querySelectorAll('.timeline-item'); let animationCompleted=false; let maxProgress=0; function updateTimeline(){ if(animationCompleted){ const timelineHeight=timeline.offsetHeight; let styleElement=document.getElementById('timeline-line-style'); if(!styleElement){ styleElement=document.createElement('style'); styleElement.id='timeline-line-style'; document.head.appendChild(styleElement); } styleElement.textContent=`.timeline::after{height:${timelineHeight}px !important;}`; timelineItems.forEach(item=>{ item.classList.add('visible'); item.classList.add('branch-visible'); }); return; } const rect=timelineSection.getBoundingClientRect(); const windowHeight=window.innerHeight; if(rect.bottom<0||rect.top>windowHeight) return; const viewportCenter=windowHeight*0.5; const sectionTopAbsolute=timelineSection.offsetTop; const sectionHeight=rect.height; const animationStart=sectionTopAbsolute-viewportCenter; const animationEnd=sectionTopAbsolute+sectionHeight-viewportCenter; const progress=Math.max(0, Math.min(1, (window.scrollY-animationStart)/(animationEnd-animationStart))); maxProgress=Math.max(maxProgress, progress); if(maxProgress>=0.99) animationCompleted=true; const timelineHeight=timeline.offsetHeight; const lineHeight=maxProgress*timelineHeight; let styleElement=document.getElementById('timeline-line-style'); if(!styleElement){ styleElement=document.createElement('style'); styleElement.id='timeline-line-style'; document.head.appendChild(styleElement); } styleElement.textContent=`.timeline::after{height:${lineHeight}px !important;}`; timelineItems.forEach(item=>{ const itemCenter=item.offsetTop + item.offsetHeight/2; if(lineHeight>=itemCenter-60) item.classList.add('branch-visible'); if(lineHeight>=itemCenter-30) item.classList.add('visible'); }); } let ticking=false; function onScroll(){ if(!ticking){ requestAnimationFrame(()=>{ updateTimeline(); ticking=false; }); ticking=true; } } setTimeout(updateTimeline,100); window.addEventListener('scroll', onScroll, {passive:true}); window.addEventListener('resize', updateTimeline); } window.addEventListener('load', animateTimeline);
+function initMap(){ if(typeof L==='undefined') return; const lieu=[48.730965037939235,-3.4481495078607427]; const map=L.map('map').setView(lieu,15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map); L.marker(lieu).addTo(map).bindPopup('Lieu de formation').openPopup(); } window.addEventListener('load', ()=>setTimeout(initMap,200));
+(function(){ const contactForm=document.getElementById('contact-form'); const submitBtn=document.getElementById('submit-btn'); if(!contactForm) return; contactForm.addEventListener('submit', function(e){ e.preventDefault(); submitBtn.disabled=true; submitBtn.textContent='Préparation...'; showLoading('Préparation du message...'); const formData={ from_name:document.getElementById('name').value, from_email:document.getElementById('email').value, subject:document.getElementById('subject').value, message:document.getElementById('message').value }; const emailBody=`Nom: ${formData.from_name}\nEmail: ${formData.from_email}\n\nMessage:\n${formData.message}`; const mailtoLink=`mailto:srafferty.ledantec@gmail.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(emailBody)}`; setTimeout(()=>{ hideLoading(); pdfViewer.style.display='none'; const modalContent=document.querySelector('.modal-content'); let mailtoDiv=document.getElementById('mailto-content'); if(!mailtoDiv){ mailtoDiv=document.createElement('div'); mailtoDiv.id='mailto-content'; modalContent.appendChild(mailtoDiv); } mailtoDiv.innerHTML=`<div style="padding:40px; text-align:center;"><h3 style="color: var(--accent); margin-bottom: 20px;">Email prêt à être envoyé</h3><p style="margin-bottom: 30px; color: var(--text);">Cliquez ci-dessous pour ouvrir votre client email avec le message pré-rempli.</p><a href="${mailtoLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block; background: var(--primary); color:white; padding:15px 30px; border-radius:5px; text-decoration:none; font-weight:600;"><i class="fas fa-envelope" style="margin-right:10px;"></i>Ouvrir le client email</a><p style="margin-top: 20px; color: var(--text-muted); font-size: 14px;">Ou copiez cette adresse : srafferty.ledantec@gmail.com</p></div>`; mailtoDiv.style.display='block'; modal.style.display='block'; contactForm.reset(); submitBtn.disabled=false; submitBtn.textContent='Envoyer'; }, 700); });})();
+</script>
 </body>
 </html>
